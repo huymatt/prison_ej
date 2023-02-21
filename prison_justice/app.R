@@ -38,8 +38,19 @@ us_counties_map <- ggplot(data=county_data,
 ui <- fluidPage(
   navbarPage("Prison Justice",
              tabPanel("Overview",
-                      textInput("txt"),
-                      textOuput("text here")),
+                      h1("Incarceration and Environmental Justice"),
+                      p("Environmental justice is the belief that all people deserve safe and healthy conditions wherever they live,
+work, learn, pray, or play. One of the most vulnerable groups to environmental injustices are incarcerated
+people, as they have little agency over their living conditions. Reports have documented both the
+connection between carceral spaces and impacts to human health from toxic exposure. Similarly, reports
+from across the U.S. have identified incarcerated people left behind in the face of deadly natural
+disasters. We are conducting a first-of-its-kind study mapping carceral facilities across the U.S. to
+determine how close they are to toxic land, as well as how likely they are to experience natural disasters
+now, and in the year 2050 using modeling data from the EPA as climate impacts will only increase. We
+aspire to develop an open-access tool using R and ArcGIS that can be used by community members,
+policy makers, and researchers alike, to better understand the linkages of harm between carceral
+communities and the marginalized communities they are often collocated with. This tool fills a critical
+education gap, while providing quantitative backing to advocate for vulnerable communities.")),
              tabPanel("Superfund Sites Map",
                       sidebarLayout(
                         sidebarPanel("widgets",
@@ -89,7 +100,6 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-  output$text <- renderText({ input$txt })
 
   state_reactive <- reactive({
     state_data %>%
