@@ -1,0 +1,35 @@
+---
+title: "Shiny objects and tests"
+author: "Matthieu Huy"
+date: "2023-02-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(raster)
+library(here)
+library(rgdal)
+library(sf)
+library(tidyverse)
+```
+
+```{r}
+climate_raster <- raster(here("data/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MIROC-ESM_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+
+plot(climate_raster)
+```
+
+```{r}
+ogrListLayers(here("data/NPL_Boundaries.gdb"))
+
+superfund_locations <- readOGR(here("data/NPL_Boundaries.gdb"), layer = "SITE_FEATURE_LINES_SF")
+# all obersvations the same?
+
+superfund_coords <- st_as_sf(superfund_locations, coords = c("x", "y"))
+
+
+ggplot() +
+  geom_sf(data = superfund_coords)
+```
+
