@@ -1,18 +1,49 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+####### Prison Justice App ##########################
+####### Matthieu Huy, March 2023 ####################
+
+
+#Load packages
+
 
 library(shiny)
 library(shinyWidgets)
 library(tidyverse)
 library(sf)
+library(leaflet)
+library(leaflet.extras)
+library(geojsonio)
+library(rgdal)
+library(spatialEco)
+library(glue)
+library(here)
+library(stringr)
+library(htmltools)
 library(tmap)
 library(usmap)
+library(shinythemes)
+library(rcartocolor)
+
+
+
+# Style ###############################################
+
+bgcolor <- "#262626"
+  bg2 <- "#222223"
+
+  label_style <- list(
+    "color"        = "black",
+    "font-family"  = "default",
+    "font-weight"  = "bold",
+    "box-shadow"   = "3px 3px rgba(0,0,0,0.25)",
+    "font-size"    = "15px",
+    "border-color" = "rgba(0,0,0,0.5)")
+
+  # all colors (palette)
+  colors <- carto_pal(12, "Vivid")[c(3:5, 9)]
+
+
+
+# Read in data ##########################################
 
 state_data <- map_data('state')
 
@@ -21,6 +52,16 @@ county_data <- map_data('county')
 county_names <- read_csv(url('https://raw.githubusercontent.com/pdil/usmap/master/inst/extdata/county_fips.csv'))
 
 state_names <- read_csv(url('https://raw.githubusercontent.com/pdil/usmap/master/inst/extdata/state_fips.csv'))
+
+
+
+# clean/prep data #########################################
+
+
+
+
+
+# create outputs/maps/plots ###############################
 
 us_counties_map <- ggplot(data=county_data,
                           aes(x=long,
@@ -34,12 +75,19 @@ us_counties_map <- ggplot(data=county_data,
   ggtitle('U.S. Map with States') +
   coord_fixed(1.3)
 
-# Define UI for application that draws a histogram
-ui <- fluidPage(
-  navbarPage("Prison Justice",
-             tabPanel("Overview",
-                      h1("Incarceration and Environmental Justice"),
-                      p("Environmental justice is the belief that all people deserve safe and healthy conditions wherever they live,
+
+
+
+
+
+# UI ##########################################
+ui <- shiny::navbarPage(
+  title = tags$div(
+    "Prison Justice"),
+    tabPanel("Home",
+             tags$div(
+               h2(strong("Incarceration and Environmental Justice")),
+               p("Environmental justice is the belief that all people deserve safe and healthy conditions wherever they live,
 work, learn, pray, or play. One of the most vulnerable groups to environmental injustices are incarcerated
 people, as they have little agency over their living conditions. Reports have documented both the
 connection between carceral spaces and impacts to human health from toxic exposure. Similarly, reports
@@ -50,61 +98,68 @@ now, and in the year 2050 using modeling data from the EPA as climate impacts wi
 aspire to develop an open-access tool using R and ArcGIS that can be used by community members,
 policy makers, and researchers alike, to better understand the linkages of harm between carceral
 communities and the marginalized communities they are often collocated with. This tool fills a critical
-education gap, while providing quantitative backing to advocate for vulnerable communities.")),
-             tabPanel("Superfund Sites Map",
-                      sidebarLayout(
-                        sidebarPanel("widgets",
-                                     #dropdown(unique(state_data$region),
-                                     # label = "Choose State:",
-                                     #inputId = "pick_state") #end dropdown
+education gap, while providing quantitative backing to advocate for vulnerable communities."),
+                br(),
+                br()),
 
-                                     checkboxGroupInput(inputId = "pick_state",
-                                                        label = "Choose State:",
-                                                        choices = unique(state_data$region)
-                                     ) #end checkbox
-                        ), #end sidebarPanel
+tags$footer(
+  h6(strong("Incarceration and Environmental Injustice: An Interactive Look at the Exposure of
+            Carceral Facilities Environmental Hazards")),
+  h6(em("Created by Matthieu Huy for Environmental Science and Management 244
+        (Advanced Data Analytics)")),
+  br())),
 
-                        mainPanel("output",
-                                  plotOutput("state_plot"),
-                                  tmapOutput("counties_tmap")
-                        )
-                      ) #end sidebarLayout
+##### UI: Maps Page #################################
 
-             ), #end tabpanel Map
+tabPanel("Mapping",
+         sidebarPanel(
+           tags$div(
+             selectInput(
+               inputId = "SelectHazard",
+               label = "Select Hazard",
+               choices = c("Superfund Sites",
+                           "Heat Risk",
+                           "Flood Risk")
+             ),
+             p(strong("Superfund Sites"), "are designated by the EPA (include data link and further explanation here"),
+             p(strong("Heat Risk"), "data from (further explain and link)"),
+             p(strong("Flood Risk"), "data from (further explain and link)")
+           )
+         ), #end sidebarPanel
 
-             tabPanel("Heat Risk"),
-             tabPanel("Flood Risk")
-  ) #end navbarPage
-)
-#end ui
+         mainPanel(
+           tags$div(
+             h3("Mapping Carceral Facilities' Exposure to Environmental Hazards",
+                style = "font-weight: bold"),
+             p("On this page, we'll look at blah blah blah.")),
+           plotOutput("state_plot"),
+           tags$div(
+             p("Write some analysis of what we see on the map and what all this stuff means here."),
+             style = "padding: 10px 10px 0px 0px"
+           ),
+           tags$footer(
+             p("These maps were created using data provided by (list data sources here)"),
+             br(),
+             br()
+           )
+         ) #end mainPanel
+), #end Mapping
 
-# Application title
-#titlePanel("Old Faithful Geyser Data"),
+##### References ########################
 
-# Sidebar with a slider input for number of bins
-# sidebarLayout(
-# sidebarPanel(
-# sliderInput("bins",
-#      "Number of bins:",
-#      min = 1,
-#     max = 50,
-#      value = 30)
-#   ),#
+tabPanel("References")
+) #end navbarPage
 
-# Show a plot of the generated distribution
-#   mainPanel(
-#    plotOutput("distPlot")
-#  )
-# )
-#)
+# end ui
+
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
-  state_reactive <- reactive({
-    state_data %>%
-      filter(region %in% input$pick_state)
-  }) #end state_reactive
+  #state_reactive <- reactive({
+   # state_data %>%
+     # filter(region %in% input$pick_state)
+  #}) #end state_reactive
 
   output$state_plot <- renderPlot(
     us_counties_map
