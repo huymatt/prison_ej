@@ -7,8 +7,10 @@
 
 library(shiny)
 library(shinyWidgets)
+library(shinycssloaders)
 library(tidyverse)
 library(sf)
+library(janitor)
 library(leaflet)
 library(leaflet.extras)
 library(geojsonio)
@@ -25,7 +27,7 @@ library(rcartocolor)
 
 
 
-# Style ###############################################
+### Style ###############################################
 
 bgcolor <- "#262626"
   bg2 <- "#222223"
@@ -43,44 +45,49 @@ bgcolor <- "#262626"
 
 
 
-# Read in data ##########################################
+### Read in data ##########################################
 
-state_data <- map_data('state')
+state_sf <- read_sf(here("data/tl_2022_us_state/tl_2022_us_state.shp")) |>
+    clean_names()
 
-county_data <- map_data('county')
+county_sf <- read_sf(here("data/tl_2022_us_county/tl_2022_us_county.shp")) |>
+  clean_names()
 
-county_names <- read_csv(url('https://raw.githubusercontent.com/pdil/usmap/master/inst/extdata/county_fips.csv'))
+superfund_csv <- read_csv(here("data/superfund_data/superfund_data_updated.csv")) |>
+  clean_names()
 
-state_names <- read_csv(url('https://raw.githubusercontent.com/pdil/usmap/master/inst/extdata/state_fips.csv'))
+superfund_sf <- st_as_sf(superfund_csv,
+                         coords = c("longitude", "latitude"))
 
+#st_crs(county_sf) ### EPSG 4296
+#st_crs(superfund_sf) ### no crs
 
+superfund_sf <- st_set_crs(superfund_sf, st_crs(county_sf))
 
-# clean/prep data #########################################
+#st_crs(superfund_sf) ### EPSG 4296
 
+superfund_buffers_1m_sf <- read_sf(here("data/superfund_data/active_sites_1.shp"))
 
+superfund_buffers_3m_sf <- read_sf(here("data/superfund_data/active_sites_3mile.shp"))
 
+prison_boundaries_sf <- read_sf(here("data/Prison_Boundaries/Prison_Boundaries.shp")) |>
+  clean_names()
 
-
-# create outputs/maps/plots ###############################
-
-us_counties_map <- ggplot(data=county_data,
-                          aes(x=long,
-                              y=lat,
-                              fill=region,
-                              group=group)) +
-  geom_polygon(color = "white") +
-  guides(fill=FALSE) +
-  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(), axis.text.y=element_blank(), axis.ticks.y=element_blank()) +
-  ggtitle('U.S. Map with States') +
-  coord_fixed(1.3)
-
+superfund_buffers_3m_sf <- st_set_crs(superfund_buffers_3m_sf, st_crs(county_sf))
+prison_boundaries_sf <- st_transform(prison_boundaries_sf, st_crs(county_sf))
 
 
+### clean/prep data #########################################
 
 
 
-# UI ##########################################
+
+
+### create outputs/maps/plots ###############################
+
+
+
+### UI ##########################################
 ui <- shiny::navbarPage(
   title = tags$div(
     "Prison Justice"),
@@ -111,11 +118,11 @@ tags$footer(
 
 ##### UI: Maps Page #################################
 
-tabPanel("Mapping",
+tabPanel("Interactive U.S. Map",
          sidebarPanel(
            tags$div(
              selectInput(
-               inputId = "SelectHazard",
+               inputId = "select_hazard",
                label = "Select Hazard",
                choices = c("Superfund Sites",
                            "Heat Risk",
@@ -132,7 +139,53 @@ tabPanel("Mapping",
              h3("Mapping Carceral Facilities' Exposure to Environmental Hazards",
                 style = "font-weight: bold"),
              p("On this page, we'll look at blah blah blah.")),
-           plotOutput("state_plot"),
+           withSpinner(
+           tmapOutput("prison_map")),
+           tags$div(
+             p("Write some analysis of what we see on the map and what all this stuff means here."),
+             style = "padding: 10px 10px 0px 0px"
+           ),
+           tags$footer(
+             p("These maps were created using data provided by (list data sources here)"),
+             br(),
+             br()
+           )
+         ) #end mainPanel
+), #end Interactive Map
+
+tabPanel("Mapping by State",
+         sidebarPanel(
+           tags$div(
+             selectInput(
+               inputId = "select_state",
+               label = "Select State",
+               choices = unique(prison_boundaries_sf$state_1)
+             ) #end selectinput
+           ), #end tags$div
+           tags$div(
+             selectInput(
+               inputId = "select_hazard",
+               label = "Select Hazard",
+               choices = c("Superfund Sites",
+                           "Heat Risk",
+                           "Flood Risk")
+             ),
+             p(strong("Superfund Sites"), "are designated by the EPA (include data link and further explanation here"),
+             p(strong("Heat Risk"), "data from (further explain and link)"),
+             p(strong("Flood Risk"), "data from (further explain and link)")
+           )
+         ), #end sidebarPanel
+
+         mainPanel(
+           tags$div(
+             h3("Mapping Carceral Facilities' Exposure to Environmental Hazards",
+                style = "font-weight: bold"),
+             p("On this page, we'll look at blah blah blah.")),
+           # withSpinner(
+           #   leafletOutput(outputId = "prison_map")
+           # ),
+           withSpinner(
+          tmapOutput("test")),
            tags$div(
              p("Write some analysis of what we see on the map and what all this stuff means here."),
              style = "padding: 10px 10px 0px 0px"
@@ -156,20 +209,42 @@ tabPanel("References")
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
+  tmap_mode("view")
+  output$test = renderTmap({
+    tm_shape(state_sf) +
+      tm_polygons()
+
+  })
+
   #state_reactive <- reactive({
    # state_data %>%
      # filter(region %in% input$pick_state)
   #}) #end state_reactive
 
-  output$state_plot <- renderPlot(
-    us_counties_map
-  )#end output$state_plot
-  #output$counties_t_map = renderTmap({
-  # tm_shape(county_data) +
-  # tm_polygons("")
+  #output$state_plot <- renderPlot(
+    #us_counties_map
+  #end output$state_plot
+  #prison_boundaries_3_reactive <- reactive({
+    #prison_boundaries_3_sf %>%
+      #filter(state_1 %in% input$select_state)
+  #})
+  tmap_mode("view")
+  output$prison_map = renderTmap({
 
+    tm_shape(superfund_buffers_3m_sf) +
+      tm_fill(col = "red",
+              alpha = 0.3) +
+      tm_polygons() +
+      tm_shape(superfund_buffers_1m_sf) +
+      tm_fill(col = "darkred",
+              alpha = 0.3) +
+      tm_polygons() +
+      tm_shape(prison_boundaries_sf) +
+      tm_dots("name",
+              palette = "Reds",
+              legend.show = FALSE)
+    })
 }
-# }
 
 
 # Run the application

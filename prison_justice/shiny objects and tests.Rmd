@@ -8,11 +8,67 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(raster)
+library(janitor)
 library(here)
 library(rgdal)
 library(sf)
 library(tidyverse)
+library(tmap)
 ```
+
+```{r}
+state_sf <- read_sf(here("data/tl_2022_us_state/tl_2022_us_state.shp")) |>
+  clean_names()
+
+county_sf <- read_sf(here("data/tl_2022_us_county/tl_2022_us_county.shp")) |>
+  clean_names() |>
+  filter(statefp != c("02", "15")) ### exclude Alaska and Hawaii, not incuded in prison data
+
+superfund_csv <- read_csv(here("data/superfund_data/superfund_data_updated.csv")) |>
+  clean_names()
+
+superfund_sf <- st_as_sf(superfund_csv,
+                         coords = c("longitude", "latitude"))
+
+#st_crs(county_sf) ### EPSG 4296
+#st_crs(superfund_sf) ### no crs
+
+superfund_sf <- st_set_crs(superfund_sf, st_crs(county_sf))
+
+#st_crs(superfund_sf) ### EPSG 4296
+
+superfund_buffers_1m_sf <- read_sf(here("data/superfund_data/active_sites_1.shp"))
+superfund_buffers_3m_sf <- read_sf(here("data/superfund_data/active_sites_3mile.shp"))
+prison_boundaries_1_8_csv <- read_csv(here("data/superfund_data/active_1_8mile_buffer.csv")) |>
+  clean_names()
+prison_boundaries_sf <- read_sf(here("data/Prison_Boundaries/Prison_Boundaries.shp")) |>
+  clean_names()
+
+#prison_boundaries_1_8sf <- st_as_sf(prison_boundaries_1_8_csv,
+        #                           coords = c("Longitude", "Latitude"))
+
+superfund_buffers_3m_sf <- st_set_crs(superfund_buffers_3m_sf, st_crs(county_sf))
+prison_boundaries_3_sf <- st_set_crs(prison_boundaries_3_sf, st_crs(county_sf))
+
+```
+
+```{r}
+tmap_mode(mode = "view")
+
+tm_shape(superfund_buffers_3m_sf) +
+  tm_fill(col = "red",
+          alpha = 0.3) +
+  tm_polygons() +
+tm_shape(superfund_buffers_1m_sf) +
+  tm_fill(col = "darkred",
+          alpha = 0.3) +
+  tm_polygons() +
+tm_shape(prison_boundaries_sf) +
+  tm_dots("name",
+          palette = "Reds",
+          legend.show = FALSE)
+```
+
 
 ```{r}
 ### precip rasters region 1 ###########################
@@ -447,16 +503,5 @@ plot(temp_raster_merge)
 
 ```
 
-```{r}
-ogrListLayers(here("data/NPL_Boundaries.gdb"))
 
-superfund_locations <- readOGR(here("data/NPL_Boundaries.gdb"), layer = "SITE_FEATURE_LINES_SF")
-# all obersvations the same?
-
-superfund_coords <- st_as_sf(superfund_locations, coords = c("x", "y"))
-
-
-ggplot() +
-  geom_sf(data = superfund_coords)
-```
 
