@@ -42,14 +42,42 @@ superfund_buffers_3m_sf <- read_sf(here("data/superfund_data/active_sites_3mile.
 prison_boundaries_1_8_csv <- read_csv(here("data/superfund_data/active_1_8mile_buffer.csv")) |>
   clean_names()
 prison_boundaries_sf <- read_sf(here("data/Prison_Boundaries/Prison_Boundaries.shp")) |>
-  clean_names()
+  clean_names() 
+
+prison_boundaries_sf$county <- str_to_title(prison_boundaries_sf$county)
 
 #prison_boundaries_1_8sf <- st_as_sf(prison_boundaries_1_8_csv,
         #                           coords = c("Longitude", "Latitude"))
 
 superfund_buffers_3m_sf <- st_set_crs(superfund_buffers_3m_sf, st_crs(county_sf))
-prison_boundaries_3_sf <- st_set_crs(prison_boundaries_3_sf, st_crs(county_sf))
+prison_boundaries_sf <- st_set_crs(prison_boundaries_sf, st_crs(county_sf))
 
+choices <- prison_boundaries_sf |>
+      filter(state == "PA") |>
+      pull(county)
+
+state_names <- state_sf |>
+  as.data.frame() |>
+  select(statefp, state = name) 
+county_state_names_df <- county_sf |>
+  as.data.frame() |>
+  select(statefp, countyfp, county = name) |>
+  inner_join(state_names, by = c("statefp")) |>
+  mutate(countyfips = paste(statefp, countyfp, sep = "")) |>
+  select(county, state, countyfips)
+county_state_names_sf <- county_sf |>
+  select(statefp, countyfp, county = name) |>
+  inner_join(state_names, by = c("statefp")) |>
+  mutate(countyfips = paste(statefp, countyfp, sep = "")) |>
+  select(county, state, countyfips)
+
+prison_boundaries_sf <- prison_boundaries_sf |>
+  select(-c("state", "county")) |>
+  inner_join(county_state_names_df, by = c("countyfips")) 
+
+county_filtered <- county_state_names_sf |>
+      filter(state == state_input) |>
+      filter(name == county_input) 
 ```
 
 ```{r}
