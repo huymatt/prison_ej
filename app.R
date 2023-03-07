@@ -136,12 +136,13 @@ tags$footer(
 ##### UI: Maps Page #################################
 
 tabPanel("Mapping by County",
+
          sidebarPanel(
            tags$div(
              selectInput(
                inputId = "state",
                label = "Select a state:",
-               choices = unique(prison_boundaries_sf$state)
+               choices = sort(unique(prison_boundaries_sf$state))
              ), #end selectinput
              selectInput(
                inputId = "county",
@@ -208,7 +209,7 @@ server <- function(input, output, session) {
       pull(county)
 
     updateSelectInput(session, "county",
-                      choices = choices)
+                      choices = sort(choices))
   })
 
 

@@ -42,7 +42,7 @@ superfund_buffers_3m_sf <- read_sf(here("data/superfund_data/active_sites_3mile.
 prison_boundaries_1_8_csv <- read_csv(here("data/superfund_data/active_1_8mile_buffer.csv")) |>
   clean_names()
 prison_boundaries_sf <- read_sf(here("data/Prison_Boundaries/Prison_Boundaries.shp")) |>
-  clean_names() 
+  clean_names()
 
 prison_boundaries_sf$county <- str_to_title(prison_boundaries_sf$county)
 
