@@ -168,13 +168,14 @@ connection between carceral spaces and impacts to human health from toxic exposu
 from across the U.S. have identified incarcerated people left behind in the face of deadly natural
 disasters. We are conducting a first-of-its-kind study mapping carceral facilities across the U.S. to
 determine how close they are to toxic land, as well as how likely they are to experience natural disasters
-now, and in the year 2050 using modeling data from the EPA as climate impacts will only increase. We
-aspire to develop an open-access tool using R and ArcGIS that can be used by community members,
-policy makers, and researchers alike, to better understand the linkages of harm between carceral
-communities and the marginalized communities they are often collocated with. This tool fills a critical
-education gap, while providing quantitative backing to advocate for vulnerable communities."),
-                br(),
-                br(),
+now, and in the year 2050 using modeling data from the EPA as climate impacts will only increase."),
+               br(),
+               p("We aspire to develop an open-access tool using R and ArcGIS that can be used by community members,
+                 policy makers, and researchers alike, to better understand the linkages of harm between carceral
+                 communities and the marginalized communities they are often collocated with. This tool fills a critical
+                 education gap, while providing quantitative backing to advocate for vulnerable communities."),
+               br(),
+               br(),
 style = "padding: 20px 100px 40px 20px"
 ),
 
@@ -194,11 +195,40 @@ tags$footer(
                 padding:    30px 100px 40px 20px;
                 z-index:    1;"
   )
-),
+), ### End Home
 
-##### UI: Maps Page #################################
+##### Superfund Maps Page #################################
 
 tabPanel("Superfund Sites",
+
+         tags$div(
+           h3(strong("Background")),
+           br(),
+           p("In 1980 Congress established the Comprehensive Environmental Response,
+             Compensation, and Liability Act (CERCLA), informally referred to as Superfund,
+             to address the mismanagement of hazardous waste throughout the United States.
+             The Superfund program provides the Environmental Protection Agency (EPA) with
+             funding and the authority to identify and clean up Superfund sites through a
+             remediation process. While the program has had successes, it also has flaws.
+             There have been documented issues with getting a proposed site approved,
+             and there are many sites with no clean-up date in sight."),
+            br(),
+            p("Modern life is dependent on many facilities and resources that can lead to the creation
+              of a Superfund site. These include, but are not limited to: airports, power plants,
+              hazardous landfills, waste incinerators, and mining and extractive activities.
+              These are all examples of what land use planners refer to as “locally undesirable
+              land uses” (LULUs). Opsal and Malin argue that prisons themselves are another form of
+              LULU, as they are pushed out of wealthy communities and into poorer or more marginalized
+              communities. (Opsal and Malin, 2020) Because Superfund sites are hazardous, they have often been utilized for
+              siting LULUs, including prisons."),
+
+           br(),
+
+           tags$div(
+             h3("Mapping Carceral Facilities' Exposure to Superfund Sites",
+                style = "font-weight: bold")),
+style = "padding: 20px 100px 40px 20px"
+         ),
 
          sidebarPanel(
            tags$div(
@@ -215,41 +245,97 @@ tabPanel("Superfund Sites",
              style = "color: black;"
            ), #end tags$div
            tags$div(
-             p(strong("Superfund Sites"), "are designated by the EPA (include data link and further explanation here"),
-             p(strong("Heat Risk"), "data from (further explain and link)"),
-             p(strong("Flood Risk"), "data from (further explain and link)"),
+             p("These maps were created using data on active superfund sites from the", strong("EPA's Superfund National Priorities List (NPL)"),
+               ", with state and county boundary shapefiles from", strong("U.S. Census Bureau.")),
              style = "color: black;"
            ),
-           tags$footer(
-             p("These maps were created using data provided by (list data sources here)"),
-             br(),
-             br(),
-             style = "color: black;"
-           )
          ), #end sidebarPanel
 
          mainPanel(
-           tags$div(
-             h3("Mapping Carceral Facilities' Exposure to Superfund Sites",
-                style = "font-weight: bold"),
-             p("On this page, we'll look at blah blah blah.")),
+
            withSpinner(
           tmapOutput("county_superfund_plot")),
            tags$div(
-             p("Write some analysis of what we see on the map and what all this stuff means here."),
-             style = "padding: 10px 10px 0px 0px"
-           ),
-           tags$footer(
-             p("These maps were created using data provided by (list data sources here)"),
              br(),
-             br()
+             p("Although carceral facilities can contribute to environmental hazards, they are also built
+             near or on undesirable lands, such as a Superfund site. Research on Superfund sites is
+             challenging because of the fact that no two superfund sites are the same. In addition,
+             carceral facilities located near or at a Superfund site can expose individuals with little
+             to no agency to change their conditions to a myriad of hazards and toxins - resulting in
+             environmental injustice. Currently, approximately 600 federal and state prisons fall within
+             a 3-mile radius of a listed Superfund site, with over 100 falling within a 1-mile radius of
+             a hazardous site (Bernd et al., 2017)"),
+             br(),
+             br(),
+             br(),
+             style = "padding: 10px 10px 0px 0px"
            )
-         ) #end mainPanel
+         ), #end mainPanel
+
+         tags$footer(
+           h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
+            U.S. Carceral Facilities to Environmental Hazards")),
+           h6(em("Created by Matthieu Huy for Environmental Science and Management 244
+        (Advanced Data Analytics)")),
+        br(),
+        style =
+          "float:      center;
+                text-align: left;
+                bottom:     40px;
+                width:      100%;
+                height:     10px;
+                color:      gray;
+                padding:    30px 100px 40px 20px;
+                z-index:    1;"
+         )
 ), #end Superfund
 
-##### References ########################
+
+##### Heat Maps Page #################################
 
 tabPanel("Heat Risk",
+
+         tags$div(
+           br(),
+           h4(strong("“People tell us that they are suffering without access to breathable air.
+                     Every summer we know this is coming and nothing changes.”"),
+              style =
+                "float:      center;
+                text-align: center;"),
+           p("- Julie Skarha, PhD in epidemiology at Brown University and author of
+             'Heat-related mortality in U.S. state and private prisons: A case-crossover analysis'.",
+             style =
+               "float:      center;
+                text-align: center;
+                bottom:     40px;
+                width:      100%;
+                color:      gray;
+                padding:    0px 0px 40px 20px;
+                z-index:    1;"),
+           h3(strong("Background")),
+              br(),
+              p("Heat-related deaths in are not uncommon in U.S. Prisons during the hot summer months of June, July, and August.
+                Incarcerated people are uniquely vulnerable to heat-related illness for a multitude of reasons.
+                People in prison are disproportionately diagnosed with diseases such as diabetes and have been found to age
+                more rapidly while incarcerated. Mental-illness is also much more prevalent among incarcerated people, and
+                drugs used to treat certain mental illnesses are known to cause heat-sensitivity (Brown, 2023).
+
+                A study by Julie Skarha published in the peer-reviewed scientific journal PLOS ONE established a link
+                between extreme heat and prison mortality. Researchers found that a temperature increase of 10-degrees above
+                the average was associated with a significant increase in prison mortality, with deaths increasing 5.2% - or 6.7%
+                among people diagnosed with heart disease. Although no publicly available national
+                data exists to indicate prisons that lack air conditioning, the increase in mortality was much higher
+                in the Northeast, at 21%, where prisons are less likely to have air conditioning or to be
+                prepared for heat. Shockingly, Suicide rates increased by 22.8% in the three days
+                following an extreme heat event (Skarha et al., 2023)."),
+
+           br(),
+
+           tags$div(
+             h3("Mapping Carceral Facilities' Exposure Heat",
+                style = "font-weight: bold")),
+           style = "padding: 20px 100px 40px 20px"
+         ),
 
          sidebarPanel(
            tags$div(
@@ -267,43 +353,117 @@ tabPanel("Heat Risk",
 
            tags$div(
 
-             p(strong("Heat Risk"), "data from (further explain and link)"),
-             style = "color: black;"
-           ),
-
-           tags$footer(
-             p("These maps were created using data provided by (list data sources here)"),
+             p(strong("Historical"), ": This map displays the average days per year from 1971-2000 with a heat index
+               above 100°F. Heat index is defined as the 'feels like' temperature resulting from the combination of temperature and humidity."),
+             p(strong("Projected"), ": This map displays the projected average days per year with a heat index
+               above 100°F in midcentury (2036-2065), with little to no action to curb current heat-trapping emissions growth."),
+             p(strong("Climate Change"), ": This map displays the projected increase in average daily temperatures
+               by midcentury (2041-2070)."),
              br(),
-             br(),
+             p("These maps were created using data on 'Days with a heat index above 100°F' from",
+               strong("the Union of Concerned Scientists"), "as well as models of average temperature
+               increase due climate change from the", strong("EPA's LASSO tool for climate change data.")),
              style = "color: black;"
            )
          ), #end sidebarPanel
 
          mainPanel(
-           tags$div(
-             h3("Mapping Carceral Facilities' Exposure to Heat",
-                style = "font-weight: bold"),
-             p("On this page, we'll look at blah blah blah.")),
+
            withSpinner(
              tmapOutput("county_heat_map")),
            tags$div(
-             p("Write some analysis of what we see on the map and what all this stuff means here."),
-             style = "padding: 10px 10px 0px 0px"
-           ),
-           tags$footer(
-             p("These maps were created using data provided by (list data sources here)"),
-             p("Citation:\n Dahl, Kristina, Erika Spanger-Siegfried, Rachel Licker, Astrid Caldas, John Abatzoglou, Nicholas Mailloux, Rachel Cleetus, Shana Udvardy, Juan Declet-Barreto, and Pamela Worth. 2019. Killer Heat in the United States: Climate Choices and the Future of Dangerously Hot Days. Cambridge, MA: Union of Concerned Scientists. https://www.ucsusa.org/resources/killer-heat-united-states-0"),
              br(),
-             br()
+             p("Across the U.S, the number of days with a heat index above 100°F is expected to
+               increase substantially by midcentury. Results from combining multiple climate change
+               models by the EPA also predict an increase in average temperatures across the U.S. As
+               this new reality comes into being, extreme heat events become more frequent as will heat-related
+               deaths in prisons. Prisons are not equipped to protect inmates from greater exposure to heat.
+               This data highlights the need for prison reform and is a call to action for policymakers."),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             br(),
+             style = "padding: 10px 10px 0px 0px"
            )
-         ) #end mainPanel
+         ), #end mainPanel
+
+         tags$footer(
+           h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
+            U.S. Carceral Facilities to Environmental Hazards")),
+           h6(em("Created by Matthieu Huy for Environmental Science and Management 244
+        (Advanced Data Analytics)")),
+        br(),
+        style =
+          "float:      center;
+                text-align: left;
+                bottom:     40px;
+                width:      100%;
+                height:     10px;
+                color:      gray;
+                padding:    30px 100px 40px 20px;
+                z-index:    1;"
+         ) #end footer
 ), #end Heat Risk
 
+##### References #################################
+
+tabPanel("References",
+
+           tags$div(h1("Acknowledgements", style = "font-weight: bold")),
+           tags$div(
+             br(),
+             p("This project was done in collaboration with (acknowledge the help of Elijah, Ale, and Shayan here)."),
+             br(),
+             br(),
+             br()
+           ),
+
+           tags$div(h1("References", style = "font-weight: bold")),
+           tags$div(
+             br(),
+             p(a("Bernd, C., Loftus-Farren, Z., & Maureen Nandini Mitra. (1 June, 2017).",
+                 href ="https://truthout.org/articles/america-s-toxic-prisons-the-environmental-injustices-of-mass-incarceration/"),
+               "America’s Toxic Prisons: The Environmental Injustices of Mass Incarceration.", em("Truthout.")),
+             br(),
+             p(a("Brown, Allen. (1 Mar. 2023).  ",
+                 href = "https://grist.org/equity/new-study-people-dying-extreme-heat-in-prisons-us/?utm_campaign=Hot+News&utm_medium=email&_hsmi=248459899&_hsenc=p2ANqtz-_hs_Me2aJ16fjDL4QWqfYYLYqxauPN0cPn53EtXGqGdrmizF5SOAosR13LzqXTp-syv-1cFVsm04Zx3ULwnNFs3m8rDA&utm_content=248459899&utm_source=hs_email"),
+               "“Study: Extreme Heat Is Driving Deaths in US Prisons.”", em("Grist.")),
+             br(),
+             p(a("Dahl, Kristina, Erika Spanger-Siegfried, Rachel Licker, Astrid Caldas, John Abatzoglou, Nicholas Mailloux, Rachel Cleetus, Shana Udvardy, Juan Declet-Barreto, and Pamela Worth. 2019.",
+                 href =  "https://www.ucsusa.org/resources/killer-heat-united-states-0"),
+               "Killer Heat in the United States: Climate Choices and the Future of Dangerously Hot Days.", em("Cambridge, MA: Union of Concerned Scientists."), "91, 73–77."),
+             br(),
+             p(a(em("LASSO : Locating and Selecting Scenarios Online."),
+                 href = "https://lasso.epa.gov"),
+               "Environmental Protection Agency."),
+             br(),
+             p(a("Opsal, T., & Malin, S. A. (2020).",
+                 href = "https://doi.org/10.1111/soin.12290"),
+               "Prisons as LULUs: Understanding the Parallels between Prison Proliferation and Environmental Injustices. ", em("Sociological Inquiry,"), "90(3), 579–602."),
+             br(),
+             p(a(em("Prison Boundaries."), " (2020).",
+                 href = "https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::prison-boundaries/about"),
+              "Homeland Infrastructure Foundation Level Data (HIFLD)."),
+             br(),
+             p(a("Skarha J, Spangler K, Dosa D, Rich JD, Savitz DA, Zanobetti A (2023).",
+                 href = "https://doi.org/10.1371/journal.pone.0281389"),
+               "Heat-related mortality in U.S. state and private prisons: A case-crossover analysis.", em("PLOS ONE.")),
+             br(),
+             p(a(em("State and County TIGER/Line Shapefiles."), " (2022).",
+                 href = "https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.2022.html#list-tab-790442341"),
+               "U.S. Census Bureau."),
+             p(a(em("Superfund: National Priorities List (NPL)."), "(updated 22 Feb. 2023)",
+                 href = "https://www.epa.gov/superfund/superfund-national-priorities-list-npl"),
+               "Environmental Protection Agency. (accessed 25 Aug. 2022)."),
+             )
+         ) # end refs page
 
 ) #end navbarPage
 
-
-# end ui
+############# end ui ################################
 
 
 # Define server logic required to draw a histogram
