@@ -204,6 +204,8 @@ tabPanel("Superfund Sites",
          tags$div(
            h3(strong("Background")),
            br(),
+           p(strong('From Baker E., Puig-Santana, A., Kaveh, S., Lenihan, T. "Assessing the risk and proximity of carceral facilities
+               to superfund sites." (in preparation):')),
            p("In 1980 Congress established the Comprehensive Environmental Response,
              Compensation, and Liability Act (CERCLA), informally referred to as Superfund,
              to address the mismanagement of hazardous waste throughout the United States.
@@ -415,9 +417,14 @@ tabPanel("References",
            tags$div(h1("Acknowledgements", style = "font-weight: bold")),
            tags$div(
              br(),
-             p("This project was done in collaboration with (acknowledge the help of Elijah, Ale, and Shayan here)."),
+             p("This project was intended to complement a working paper by Masters students at the Bren School of Environmental Science and Management:"),
+             p(strong('Baker E., Puig-Santana, A., Kaveh, S., Lenihan, T. "Assessing the risk and proximity of carceral facilities
+               to superfund sites." (in preparation).')),
              br(),
+             p('Excerpts from this paper are included in the "Superfund Sites" page for context. Thank you to Elijah Baker and Alessandra Puig-Santana for their help.'),
              br(),
+             p('Thank you to Shayan Kaveh for his work in extracting and cleaning the
+               data from HIFLD and the EPA on prison boundaries and superfund sites in preparation for this geospatial analysis.'),
              br()
            ),
 
@@ -426,15 +433,15 @@ tabPanel("References",
              br(),
              p(a("Bernd, C., Loftus-Farren, Z., & Maureen Nandini Mitra. (1 June, 2017).",
                  href ="https://truthout.org/articles/america-s-toxic-prisons-the-environmental-injustices-of-mass-incarceration/"),
-               "America’s Toxic Prisons: The Environmental Injustices of Mass Incarceration.", em("Truthout.")),
+               '"America’s Toxic Prisons: The Environmental Injustices of Mass Incarceration."', em("Truthout.")),
              br(),
              p(a("Brown, Allen. (1 Mar. 2023).  ",
                  href = "https://grist.org/equity/new-study-people-dying-extreme-heat-in-prisons-us/?utm_campaign=Hot+News&utm_medium=email&_hsmi=248459899&_hsenc=p2ANqtz-_hs_Me2aJ16fjDL4QWqfYYLYqxauPN0cPn53EtXGqGdrmizF5SOAosR13LzqXTp-syv-1cFVsm04Zx3ULwnNFs3m8rDA&utm_content=248459899&utm_source=hs_email"),
-               "“Study: Extreme Heat Is Driving Deaths in US Prisons.”", em("Grist.")),
+               '"Study: Extreme Heat Is Driving Deaths in US Prisons."', em("Grist.")),
              br(),
              p(a("Dahl, Kristina, Erika Spanger-Siegfried, Rachel Licker, Astrid Caldas, John Abatzoglou, Nicholas Mailloux, Rachel Cleetus, Shana Udvardy, Juan Declet-Barreto, and Pamela Worth. 2019.",
                  href =  "https://www.ucsusa.org/resources/killer-heat-united-states-0"),
-               "Killer Heat in the United States: Climate Choices and the Future of Dangerously Hot Days.", em("Cambridge, MA: Union of Concerned Scientists."), "91, 73–77."),
+               '"Killer Heat in the United States: Climate Choices and the Future of Dangerously Hot Days."', em("Cambridge, MA: Union of Concerned Scientists."), "91, 73–77."),
              br(),
              p(a(em("LASSO : Locating and Selecting Scenarios Online."),
                  href = "https://lasso.epa.gov"),
@@ -442,7 +449,7 @@ tabPanel("References",
              br(),
              p(a("Opsal, T., & Malin, S. A. (2020).",
                  href = "https://doi.org/10.1111/soin.12290"),
-               "Prisons as LULUs: Understanding the Parallels between Prison Proliferation and Environmental Injustices. ", em("Sociological Inquiry,"), "90(3), 579–602."),
+               '"Prisons as LULUs: Understanding the Parallels between Prison Proliferation and Environmental Injustices."', em("Sociological Inquiry,"), "90(3), 579–602."),
              br(),
              p(a(em("Prison Boundaries."), " (2020).",
                  href = "https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::prison-boundaries/about"),
@@ -450,7 +457,7 @@ tabPanel("References",
              br(),
              p(a("Skarha J, Spangler K, Dosa D, Rich JD, Savitz DA, Zanobetti A (2023).",
                  href = "https://doi.org/10.1371/journal.pone.0281389"),
-               "Heat-related mortality in U.S. state and private prisons: A case-crossover analysis.", em("PLOS ONE.")),
+               '"Heat-related mortality in U.S. state and private prisons: A case-crossover analysis."', em("PLOS ONE.")),
              br(),
              p(a(em("State and County TIGER/Line Shapefiles."), " (2022).",
                  href = "https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.2022.html#list-tab-790442341"),
@@ -458,7 +465,29 @@ tabPanel("References",
              p(a(em("Superfund: National Priorities List (NPL)."), "(updated 22 Feb. 2023)",
                  href = "https://www.epa.gov/superfund/superfund-national-priorities-list-npl"),
                "Environmental Protection Agency. (accessed 25 Aug. 2022)."),
-             )
+            br(),
+            br(),
+            br(),
+            br(),
+            br()
+             ),
+
+         tags$footer(
+           h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
+            U.S. Carceral Facilities to Environmental Hazards")),
+           h6(em("Created by Matthieu Huy for Environmental Science and Management 244
+        (Advanced Data Analytics)")),
+        br(),
+        style =
+          "float:      center;
+                text-align: left;
+                bottom:     40px;
+                width:      100%;
+                height:     10px;
+                color:      gray;
+                padding:    30px 100px 40px 20px;
+                z-index:    1;"
+         ) #end footer
          ) # end refs page
 
 ) #end navbarPage
