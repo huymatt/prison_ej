@@ -162,15 +162,16 @@ ui <- shiny::navbarPage(theme = "shiny_theme.css",
              tags$div(
                h3(strong("About this site")),
                p("Environmental justice is the belief that all people deserve safe and healthy conditions wherever they live,
-work, learn, pray, or play. One of the most vulnerable groups to environmental injustices are incarcerated
-people, as they have little agency over their living conditions. Reports have documented both the
-connection between carceral spaces and impacts to human health from toxic exposure. Similarly, reports
-from across the U.S. have identified incarcerated people left behind in the face of deadly natural
-disasters. We are conducting a first-of-its-kind study mapping carceral facilities across the U.S. to
-determine how close they are to toxic land, as well as how likely they are to experience natural disasters
-now, and in the year 2050 using modeling data from the EPA as climate impacts will only increase."),
+                 work, learn, pray, or play. One of the most vulnerable groups to environmental injustices are incarcerated
+                 people, as they have little agency over their living conditions. Reports have documented the
+                 connection between carceral spaces and impacts to human health from exposure to toxic chemicals as well as extreme heat.
+                 This website aims to explore and visualize the severity of this exposure. Similarly, reports from across the U.S. have identified incarcerated people left
+                 behind in the face of deadly natural disasters, and flood risk is another area we would like to explore in future analyses."),
                br(),
-               p("We aspire to develop an open-access tool using R and ArcGIS that can be used by community members,
+               p("This RShiny app attempts a first-of-its-kind study mapping carceral facilities
+                 across the U.S. to determine how close they are to toxic land, as well as how likely they are to experience extreme heat events
+                 now, and in midcentury (years 2040-2070) using modeling data from the EPA as climate impacts will only increase.
+                 We aspire to develop an open-access tool using R and ArcGIS that can be used by community members,
                  policy makers, and researchers alike, to better understand the linkages of harm between carceral
                  communities and the marginalized communities they are often collocated with. This tool fills a critical
                  education gap, while providing quantitative backing to advocate for vulnerable communities."),
@@ -328,8 +329,8 @@ tabPanel("Heat Risk",
                 among people diagnosed with heart disease. Although no publicly available national
                 data exists to indicate prisons that lack air conditioning, the increase in mortality was much higher
                 in the Northeast, at 21%, where prisons are less likely to have air conditioning or to be
-                prepared for heat. Shockingly, Suicide rates increased by 22.8% in the three days
-                following an extreme heat event (Skarha et al., 2023)."),
+                prepared to handle heatwaves. Shockingly, Suicide rates increased by 22.8% in the three days
+                following an extreme heat event, as desperate prisoners reach a dangerous tipping point during these periods (Skarha et al., 2023)."),
 
            br(),
 
@@ -376,10 +377,11 @@ tabPanel("Heat Risk",
            tags$div(
              br(),
              p("Across the U.S, the number of days with a heat index above 100°F is expected to
-               increase substantially by midcentury. Results from combining multiple climate change
-               models by the EPA also predict an increase in average temperatures across the U.S. As
-               this new reality comes into being, extreme heat events become more frequent as will heat-related
-               deaths in prisons. Prisons are not equipped to protect inmates from greater exposure to heat.
+               increase substantially by midcentury, with some areas that rarely experienced such heat
+               being subject to it for the first time. Results from combining multiple climate change
+               models by the EPA also predict an increase in average daily temperatures across the U.S. As
+               this new reality comes into being, extreme heat events will become more frequent as will heat-related
+               deaths in prisons. Prisons are not equipped to protect inmates from prolonged exposure to heat.
                This data highlights the need for prison reform and is a call to action for policymakers."),
              br(),
              br(),
@@ -421,8 +423,7 @@ tabPanel("References",
              p(strong('Baker E., Puig-Santana, A., Kaveh, S., Lenihan, T. "Assessing the risk and proximity of carceral facilities
                to superfund sites." (in preparation).')),
              br(),
-             p('Excerpts from this paper are included in the "Superfund Sites" page for context. Thank you to Elijah Baker and Alessandra Puig-Santana for their help.'),
-             br(),
+             p('Excerpts from this paper are included in the "Superfund Sites" page to provide context. Thank you to Elijah Baker and Alessandra Puig-Santana for their help.'),
              p('Thank you to Shayan Kaveh for his work in extracting and cleaning the
                data from HIFLD and the EPA on prison boundaries and superfund sites in preparation for this geospatial analysis.'),
              br()
@@ -562,6 +563,7 @@ server <- function(input, output, session) {
     if(input$heat_map == "Historical") {
       tm_shape(state_heat_filtered) +
         tm_fill("historical",
+                title = "Number of days above 100°F",
                 palette = "YlOrRd",
                 alpha = 0.8) +
         tm_polygons() +
@@ -576,6 +578,7 @@ server <- function(input, output, session) {
     else if(input$heat_map == "Projected") {
       tm_shape(state_heat_filtered) +
         tm_fill("projected",
+                title = "Number of days above 100°F",
                 palette = "YlOrRd",
                 alpha = 0.8) +
         tm_polygons() +
@@ -588,7 +591,8 @@ server <- function(input, output, session) {
 
     else if(input$heat_map == "Climate Change") {
       tm_shape(temp_raster_clipped) +
-        tm_raster(palette = "YlOrRd",
+        tm_raster(title = "Temperature increase (°F)",
+                  palette = "YlOrRd",
                   legend.show = TRUE) +
         tm_shape(state_prisons) +
         tm_dots(id = "name",
