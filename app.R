@@ -141,9 +141,9 @@ county_heat_100 <- county_heat_100 |>
 
 county_heat_100_sf <- county_state_names_sf |>
   inner_join(county_heat_100, by = c("state_county")) |>
-  select(county = county.x, state = state.x, historical, projected = no_action_5) |>
-  filter(state %in% c("California", "Arizona", "Nevada", "New Mexico", "Texas",
-                      "Oklahoma", "Louisiana", "Arkansas")) ### same states included in raster
+  select(county = county.x, state = state.x, historical, projected = no_action_5)
+  #filter(state %in% c("California", "Arizona", "Nevada", "New Mexico", "Texas",
+                     # "Oklahoma", "Louisiana", "Arkansas")) ### same states included in raster
 
 
 ### UI ##########################################
@@ -566,7 +566,9 @@ server <- function(input, output, session) {
         tm_fill("historical",
                 title = "Number of days above 100°F",
                 palette = "YlOrRd",
-                alpha = 0.8) +
+                alpha = 0.8,
+                breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90),
+                labels = c("0", "10", "20", "30", "40", "50", "60", "70", "80+")) +
         tm_polygons() +
         tm_shape(state_prisons) +
         tm_dots(id = "name",
@@ -581,7 +583,9 @@ server <- function(input, output, session) {
         tm_fill("projected",
                 title = "Number of days above 100°F",
                 palette = "YlOrRd",
-                alpha = 0.8) +
+                alpha = 0.8,
+                breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90),
+                labels = c("0", "10", "20", "30", "40", "50", "60", "70", "80+")) +
         tm_polygons() +
         tm_shape(state_prisons) +
         tm_dots(id = "name",
