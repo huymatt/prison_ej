@@ -6,12 +6,13 @@
 
 
 library(shiny)
+library(raster)
 library(shinyWidgets)
 library(shinycssloaders)
 library(tidyverse)
 library(sf)
 library(janitor)
-library(raster)
+library(terra)
 library(leaflet)
 library(leaflet.extras)
 library(geojsonio)
@@ -39,6 +40,7 @@ state_sf <- read_sf(here("data/tl_2022_us_state/tl_2022_us_state.shp")) |>
 ### County polygons from US Census Bureau
 county_sf <- read_sf(here("data/tl_2022_us_county/tl_2022_us_county.shp")) |>
   clean_names()
+## county simplify shp file (run in seperate script, play around with threshold)
 
 ### Superfund data
 superfund_csv <- read_csv(here("data/superfund_data/superfund_data_updated.csv")) |>
@@ -83,143 +85,154 @@ county_heat_100 <- readxl::read_excel(here("data/killer-heat-data-by-county.xlsx
 
 ### temp rasters region 1 (ME, NH, VT, MA, RI, CT)
 
-temp_1a <- raster(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_CMCC-CMS_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_1b <- raster(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_GFDL-ESM2G_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_1c <- raster(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_HadGEM2-CC_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_1d <- raster(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_1e <- raster(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_MIROC-ESM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_1f <- raster(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_1a <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_CMCC-CMS_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_1b <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_GFDL-ESM2G_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_1c <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_HadGEM2-CC_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_1d <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_1e <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_MIROC-ESM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_1f <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
 
-temp1_stack <- stack(temp_1a, temp_1b, temp_1c, temp_1d, temp_1e, temp_1f) # Put all pr rasters in a stack
-temp1_raster_avg <- calc(temp1_stack, mean) #avg all climate models to generate 1 "mean" raster layer
-
+temp1_stack <- c(temp_1a, temp_1b, temp_1c, temp_1d, temp_1e, temp_1f) # Put all pr rasters in a stack
+temp1_raster_avg <- reduce(temp1_stack, mean) #avg all climate models to generate 1 "mean" raster layer
+temp1_raster_avg <- raster(temp1_raster_avg) ### convert to raster::raster layer
 
 ### temp rasters region 2 (NY, NJ)
 
-temp_2a <- raster(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_CMCC-CMS_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2b <- raster(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_GFDL-ESM2M_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2c <- raster(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_GISS-E2-R_r2i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2d <- raster(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_HadGEM2-CC_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2e <- raster(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_inmcm4_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2f <- raster(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_MIROC-ESM_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2g <- raster(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_MIROC-ESM-CHEM_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2h <- raster(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_MPI-ESM-MR_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_2a <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_CMCC-CMS_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_2b <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_GFDL-ESM2M_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_2c <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_GISS-E2-R_r2i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_2d <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_HadGEM2-CC_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_2e <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_inmcm4_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_2f <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_MIROC-ESM_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_2g <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_MIROC-ESM-CHEM_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_2h <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_MPI-ESM-MR_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
 
-temp2_stack <- stack(temp_2a, temp_2b, temp_2c, temp_2d, temp_2e, temp_2f, temp_2g, temp_2h)
-temp2_raster_avg <- calc(temp2_stack, mean)
+temp2_stack <- c(temp_2a, temp_2b, temp_2c, temp_2d, temp_2e, temp_2f, temp_2g, temp_2h)
+temp2_raster_avg <- app(temp2_stack, mean)
+temp2_raster_avg <- raster(temp2_raster_avg) ### convert to raster::raster layer
 
 ### temp rasters region 3 (MA, MD, VA, WV, DC)
 
-temp_3a <- raster(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_GFDL-CM3_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3b <- raster(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_HadGEM2-CC_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3c <- raster(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_HadGEM2-ES_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3d <- raster(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_inmcm4_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3e <- raster(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_IPSL-CM5A-LR_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3f <- raster(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_MIROC-ESM_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3g <- raster(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_MPI-ESM-MR_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3h <- raster(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_MRI-CGCM3_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_3a <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_GFDL-CM3_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_3b <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_HadGEM2-CC_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_3c <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_HadGEM2-ES_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_3d <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_inmcm4_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_3e <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_IPSL-CM5A-LR_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_3f <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_MIROC-ESM_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_3g <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_MPI-ESM-MR_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+temp_3h <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_MRI-CGCM3_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
 
-temp3_stack <- stack(temp_3a, temp_3b, temp_3c, temp_3d, temp_3e, temp_3f, temp_3g, temp_3h)
-temp3_raster_avg <- calc(temp3_stack, mean)
+temp3_stack <- c(temp_3a, temp_3b, temp_3c, temp_3d, temp_3e, temp_3f, temp_3g, temp_3h)
+temp3_raster_avg <- app(temp3_stack, mean)
+temp3_raster_avg <- raster(temp3_raster_avg) ### convert to raster::raster layer
 
 ### temp rasters region 4 (KY, TN, NC, SC, MS, AL, GA, FL)
 
-temp_4a <- raster(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_FGOALS-g2_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_4b <- raster(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_4c <- raster(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_HadGEM2-CC_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_4d <- raster(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_HadGEM2-ES_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_4e <- raster(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_4f <- raster(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_MPI-ESM-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_4g <- raster(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_4a <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_FGOALS-g2_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_4b <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_4c <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_HadGEM2-CC_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_4d <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_HadGEM2-ES_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_4e <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_4f <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_MPI-ESM-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_4g <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
 
-temp4_stack <- stack(temp_4a, temp_4b, temp_4c, temp_4d, temp_4e, temp_4f, temp_4g)
-temp4_raster_avg <- calc(temp4_stack, mean)
+temp4_stack <- c(temp_4a, temp_4b, temp_4c, temp_4d, temp_4e, temp_4f, temp_4g)
+temp4_raster_avg <- app(temp4_stack, mean)
+temp4_raster_avg <- raster(temp4_raster_avg) ### convert to raster::raster layer
 
 ### temp rasters region 5 (MI, OH, IN, IL, WI, MN)
 
-temp_5a <- raster(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_ACCESS1-0_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5b <- raster(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_CMCC-CMS_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5c <- raster(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5d <- raster(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_GFDL-ESM2M_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5e <- raster(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_GISS-E2-R_r2i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5f <- raster(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5g <- raster(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_IPSL-CM5A-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5h <- raster(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_MIROC-ESM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5i <- raster(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5j <- raster(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_5a <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_ACCESS1-0_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_5b <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_CMCC-CMS_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_5c <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_5d <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_GFDL-ESM2M_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_5e <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_GISS-E2-R_r2i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_5f <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_5g <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_IPSL-CM5A-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_5h <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_MIROC-ESM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_5i <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_5j <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
 
-temp5_stack <- stack(temp_5a, temp_5b, temp_5c, temp_5d, temp_5e, temp_5f, temp_5g, temp_5h, temp_5i, temp_5j)
-temp5_raster_avg <- calc(temp5_stack, mean)
+temp5_stack <- c(temp_5a, temp_5b, temp_5c, temp_5d, temp_5e, temp_5f, temp_5g, temp_5h, temp_5i, temp_5j)
+temp5_raster_avg <- app(temp5_stack, mean)
+temp5_raster_avg <- raster(temp5_raster_avg) ### convert to raster::raster layer
 
 ### temp rasters region 6 (AR, LA, NM, OK, TX)
 
-temp_6a <- raster(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_ACCESS1-3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_6b <- raster(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_HadGEM2-ES_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_6c <- raster(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_6d <- raster(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_IPSL-CM5A-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_6e <- raster(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_6a <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_ACCESS1-3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_6b <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_HadGEM2-ES_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_6c <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_6d <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_IPSL-CM5A-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_6e <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
 
-temp6_stack <- stack(temp_6a, temp_6b, temp_6c, temp_6d, temp_6e)
-temp6_raster_avg <- calc(temp6_stack, mean)
+temp6_stack <- c(temp_6a, temp_6b, temp_6c, temp_6d, temp_6e)
+temp6_raster_avg <- app(temp6_stack, mean)
+temp6_raster_avg <- raster(temp6_raster_avg) ### convert to raster::raster layer
 
 ### temp rasters region 7 (NE, IA, KS, MO)
 
-temp_7a <- raster(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_ACCESS1-0_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7b <- raster(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_EC-EARTH_r2i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7c <- raster(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7d <- raster(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_HadGEM2-ES_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7e <- raster(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7f <- raster(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7g <- raster(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7h <- raster(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_GFDL-ESM2M_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7i <- raster(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_IPSL-CM5A-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_7a <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_ACCESS1-0_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_7b <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_EC-EARTH_r2i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_7c <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_7d <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_HadGEM2-ES_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_7e <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_7f <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_7g <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_7h <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_GFDL-ESM2M_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_7i <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_IPSL-CM5A-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
 
-temp7_stack <- stack(temp_7a, temp_7b, temp_7c, temp_7d, temp_7e, temp_7f, temp_7g)
-temp7_raster_avg <- calc(temp7_stack, mean)
+temp7_stack <- c(temp_7a, temp_7b, temp_7c, temp_7d, temp_7e, temp_7f, temp_7g, temp_7h, temp_7i)
+temp7_raster_avg <- app(temp7_stack, mean)
+temp7_raster_avg <- raster(temp7_raster_avg) ### convert to raster::raster layer
 
 ### temp rasters region 8 (UT, CO, WY, SD, ND, MT)
 
-temp_8a <- raster(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_ACCESS1-0_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_8b <- raster(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_EC-EARTH_r2i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_8c <- raster(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_8d <- raster(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_HadGEM2-AO_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_8e <- raster(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_8f <- raster(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_8g <- raster(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_8a <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_ACCESS1-0_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_8b <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_EC-EARTH_r2i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_8c <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_8d <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_HadGEM2-AO_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_8e <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_8f <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_8g <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
 
-temp8_stack <- stack(temp_8a, temp_8b, temp_8c, temp_8d, temp_8e, temp_8f, temp_8g)
-temp8_raster_avg <- calc(temp8_stack, mean)
+temp8_stack <- c(temp_8a, temp_8b, temp_8c, temp_8d, temp_8e, temp_8f, temp_8g)
+temp8_raster_avg <- app(temp8_stack, mean)
+temp8_raster_avg <- raster(temp8_raster_avg) ### convert to raster::raster layer
 
 ### temp rasters region 9 (CA, NV, AZ)
 
-temp_9a <- raster(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_CanESM2_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_9b <- raster(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_9c <- raster(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MIROC-ESM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_9d <- raster(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_9e <- raster(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MIROC5_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_9f <- raster(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_9a <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_CanESM2_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_9b <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_9c <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MIROC-ESM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_9d <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_9e <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MIROC5_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_9f <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
 
-temp9_stack <- stack(temp_9a, temp_9b, temp_9c, temp_9d, temp_9e, temp_9f)
-
-temp9_raster_avg <- calc(temp9_stack, mean)
+temp9_stack <- c(temp_9a, temp_9b, temp_9c, temp_9d, temp_9e, temp_9f)
+temp9_raster_avg <- app(temp9_stack, mean)
+temp9_raster_avg <- raster(temp9_raster_avg) ### convert to raster::raster layer
 
 ### temp rasters region 10 (WA, OR, ID)
 
-temp_10a <- raster(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_CanESM2_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_10b <- raster(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_CMCC-CM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_10c <- raster(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_CMCC-CMS_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_10d <- raster(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_HadGEM2-AO_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_10e <- raster(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_HadGEM2-AO_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_10f <- raster(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_10g <- raster(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_10a <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_CanESM2_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_10b <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_CMCC-CM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_10c <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_CMCC-CMS_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_10d <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_HadGEM2-AO_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_10e <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_HadGEM2-AO_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_10f <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+temp_10g <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
 
-temp10_stack <- stack(temp_10a, temp_10b, temp_10c, temp_10d, temp_10e, temp_10f, temp_10g)
-temp10_raster_avg <- calc(temp10_stack, mean)
+temp10_stack <- c(temp_10a, temp_10b, temp_10c, temp_10d, temp_10e, temp_10f, temp_10g)
+temp10_raster_avg <- app(temp10_stack, mean)
+temp10_raster_avg <- raster(temp10_raster_avg) ### convert to raster::raster layer
 
 temp_raster_merge <- merge(temp1_raster_avg, temp2_raster_avg, temp3_raster_avg, temp4_raster_avg, temp5_raster_avg,
                            temp6_raster_avg, temp7_raster_avg, temp8_raster_avg, temp9_raster_avg, temp10_raster_avg)
 
 temp_raster_merge <- projectRaster(temp_raster_merge, crs = crs(county_sf))
+
+### project() command didn't work well with SpatRaster object from 'terra' package, this achieves the same thing
+#temp_raster_merge <- project(temp_raster_merge, crs = crs(county_sf))
 
 ### clean/prep data #########################################
 
@@ -651,7 +664,10 @@ server <- function(input, output, session) {
       tm_polygons() +
       tm_shape(county_prisons) +
       tm_dots(id = "name",
-              col = "slategray2",
+              col = "type",
+              palette = "Spectral",
+              popup.vars = c("name", "address", "city", "county", "telephone",
+                             "type", "status", "population", "capacity", "securelvl"),
               size = 0.025,
               legend.show = FALSE)
     })
@@ -684,7 +700,8 @@ server <- function(input, output, session) {
         tm_polygons() +
         tm_shape(state_prisons) +
         tm_dots(id = "name",
-                col = "slategray2",
+                col = "type",
+                palette = "Spectral",
                 size = 0.015,
                 legend.show = FALSE)
 
@@ -701,7 +718,8 @@ server <- function(input, output, session) {
         tm_polygons() +
         tm_shape(state_prisons) +
         tm_dots(id = "name",
-                col = "slategray2",
+                col = "type",
+                palette = "Spectral",
                 size = 0.015,
                 legend.show = FALSE)
     }
@@ -710,10 +728,15 @@ server <- function(input, output, session) {
       tm_shape(temp_raster_clipped) +
         tm_raster(title = "Temperature increase (°F)",
                   palette = "YlOrRd",
+                  breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+                  labels = c("0", "1", "2", "3", "4", "5", "6", "7", "8+"),
                   legend.show = TRUE) +
         tm_shape(state_prisons) +
         tm_dots(id = "name",
-                col = "slategray2",
+                col = "type",
+                palette = "Spectral",
+                popup.vars = c("name", "address", "city", "county", "telephone",
+                               "type", "status", "population", "capacity", "securelvl"),
                 size = 0.015,
                 legend.show = FALSE)
     }
@@ -723,3 +746,59 @@ server <- function(input, output, session) {
 
 # Run the application
 shinyApp(ui = ui, server = server)
+
+# goals: load more rapidly
+# terra package is faster than raster package for loading rasters, used in class
+# Casey's repo "esm263" bren gis class, all sf and terra code
+
+# st_simplify function -> simplify county outlines to reduce computational power
+
+# compute the proportion of state's prisons that exceed a certain heat threshold
+
+# slider input to have user decide the threshold
+# if over x amount of days...
+
+#checkbox group input
+    #filter type %in% State, county....
+    #can have multiple values (can select all, )
+
+#look at increase in number of days above 100
+# look at places where increase in number of days above 100 is statistically greater
+# than the average increase across the country
+# counties significantly higher than the average as most problematic
+
+
+# how many prisons fall into red zones? Identify concentration of prisons falling within risk index
+# Look at state policy on prisons
+         # County levels
+         # Case Studies would supplement maps nicely
+         # textual data? identify most egregious cases where there were prisoner deaths
+         # case study where animals (pigs) had A/C to keep them alive but not prisoners, prison sued?
+         # How are we going mandate A/C?
+         # Who has the power to change conditions in prisons? Question of Ownership?
+         # Prison economy, (wildfire management in California) pick a state or two to dive into what the policies are
+# social vulnerability index specific to incarcerated people vs how social vulnerability is conventionally studied
+         # compounding factors, here's the data on heat but these other factors will also be making an impact
+         # specific to incarcerated people
+         # conventional social vulnerability factors are very different then prisoners
+         # required to understand extreme heat map
+# What data points to look for
+# goal is to protect incarcerated people, but also to encourage abolishing prisons, reducing prison populations
+# instead of making infrastructure more resilient
+# tied to built environment, Hospitals a similar group?
+# Lit review
+# For Casey
+     # integrate extreme heat events
+
+# make points different colors based on State, Federal, or County prison
+    #turn on and off different types of prison
+    #only examine federal prisons...
+
+    # Sarah Anderson?
+
+    # goal this quarter: really finish up this tool, make it presentable to the public,
+        # work on visuals (of the map and the website), work on text descriptions
+        # identify audience, organizers who wouldb benefit from this tool, zoom with stakeholders
+        # social and climate justice
+        # tool to show "medical health concerns in this group, tool shows this prison could be in area of concern"
+        # Fletcher scholarship for "research dexription" or RA-ship
