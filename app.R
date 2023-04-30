@@ -34,13 +34,14 @@ select <- dplyr::select ##dplyr::select() was clashing with another function
 ######################## Read in data ##########################################
 
 ### State polygons from US Census Bureau
-state_sf <- read_sf(here("data/tl_2022_us_state/tl_2022_us_state.shp")) |>
-    clean_names()
+### applied sf::st_simplify() function in separate Rscript to reduce resolution and file size
+
+state_sf <- read_sf(here("data/state_county/states_simple.shp"))
 
 ### County polygons from US Census Bureau
-county_sf <- read_sf(here("data/tl_2022_us_county/tl_2022_us_county.shp")) |>
-  clean_names()
-## county simplify shp file (run in seperate script, play around with threshold)
+### applied sf::st_simplify() function in separate Rscript to reduce resolution and file size
+county_sf <- read_sf(here("data/state_county/us_county_simple.shp"))
+
 
 ### Superfund data
 superfund_csv <- read_csv(here("data/superfund_data/superfund_data_updated.csv")) |>
@@ -728,6 +729,7 @@ server <- function(input, output, session) {
       tm_shape(temp_raster_clipped) +
         tm_raster(title = "Temperature increase (°F)",
                   palette = "YlOrRd",
+                  alpha = 0.8,
                   breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
                   labels = c("0", "1", "2", "3", "4", "5", "6", "7", "8+"),
                   legend.show = TRUE) +
