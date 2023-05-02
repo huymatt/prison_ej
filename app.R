@@ -283,7 +283,7 @@ ui <- shiny::navbarPage(theme = "shiny_theme.css",
       href = "shiny_theme.css")
     ),
     tabPanel("Home",
-             img(src = "prison_logo3.png", height = "100%", width = "100%"),
+             img(src = "prison_logo3.png", height = "100%", width = "100%%"),
 
              tags$div(
                h3(strong("About this site")),
