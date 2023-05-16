@@ -286,31 +286,45 @@ ui <- shiny::navbarPage(theme = "shiny_theme.css",
              img(src = "prison_logo3.png", height = "100%", width = "100%%"),
 
              tags$div(
-               h3(strong("About this site")),
-               p("Environmental justice is the belief that all people deserve safe and healthy conditions wherever they live,
-                 work, learn, pray, or play. One of the most vulnerable groups to environmental injustices are incarcerated
-                 people, as they have little agency over their living conditions. Reports have documented the
-                 connection between carceral spaces and impacts to human health from exposure to toxic chemicals as well as extreme heat.
-                 This website aims to explore and visualize the severity of this exposure. Similarly, reports from across the U.S. have identified incarcerated people left
-                 behind in the face of deadly natural disasters, and flood risk is another area we would like to explore in future analyses."),
+               h3(strong("Background")),
+               p("Environmental justice is the belief that all people deserve safe and healthy conditions wherever they live, work, learn, pray, or play.
+                 The environmental justice movement seeks to address historical inequities by including impacted individuals and communities in the decision-making process.
+                 One catalyst for the environmental justice movement began", a("in 1982 in Warren County, NC,", href = 'https://www.nrdc.org/stories/environmental-justice-movement'),'when Black community members came together to protest the dumping of
+                 hazardous waste in their rural community. The movement continues to grow due to the continued hard work of community organizers from predominantly BIPOC and
+                 low-income communities.'),
                br(),
-               p("This RShiny app attempts a first-of-its-kind study mapping carceral facilities
-                 across the U.S. to determine how close they are to toxic land, as well as how likely they are to experience extreme heat events
-                 now, and in midcentury (years 2040-2070) using modeling data from the EPA as climate impacts will only increase.
-                 We aspire to develop an open-access tool using R and ArcGIS that can be used by community members,
-                 policy makers, and researchers alike, to better understand the linkages of harm between carceral
-                 communities and the marginalized communities they are often collocated with. This tool fills a critical
-                 education gap, while providing quantitative backing to advocate for vulnerable communities."),
+               p('Incarcerated people are one of the most vulnerable groups to environmental injustices, because they have little agency over their day-to-day movements and living conditions.
+                 Additionally, they have few opportunities to seek improvements in their living environment. Incarcerated people have spoken out about issues like overcrowding, unsafe working conditions,
+                 and lack of sanitation services, with both independent reports and peer-reviewed studies supporting these claims, challenging that these are issues of environmental injustice.
+                 Reports have also documented the connection between carceral spaces and impacts to human health from exposure to', a('toxic chemicals', href = 'https://journals.sagepub.com/doi/abs/10.1177/14624745221114826'), 'and to', a('extreme heat events.', href = 'https://theintercept.com/series/climate-and-punishment/'),
+                 'Similarly,', a('reports from across the U.S.', href = 'https://www.hrw.org/news/2005/09/21/new-orleans-prisoners-abandoned-floodwaters'), 'have identified incarcerated people left behind in the face of deadly natural disasters while other communities have been evacuated.'),
+               br(),
+               h3(strong("About this Site")),
+               p('This RShiny app attempts a first-of-its-kind study mapping carceral facilities across the U.S. to determine how close they are to superfund sites,
+                 as well as how likely they are to experience extreme heat events now, and in midcentury (years 2040-2070) using modeling data from', a('the Union of
+                 Concerned Scientists', href = "https://www.ucsusa.org/resources/killer-heat-united-states-0"), 'and', a('the U.S. Environmental Protection Agency (EPA).', href = "https://lasso.epa.gov"), 'This interactive website builds upon tools like EnviroScreen by paying specific attention
+                 to the environmental exposures of incarcerated people and providing context to users about the frequency, severity, and potential for harm.'),
+               br(),
+               p("We aspire to develop an open-access tool using R and ArcGIS that can be used by community members, policy makers, and researchers alike, to better understand the linkages
+                 of harm between carceral communities and the marginalized communities they are often collocated with. This tool fills a critical education gap, while providing quantitative
+                 backing to community advocates who are fighting for a more just and equitable system. It is our hope that this tool provides context to decision-makers, and will be used to
+                 advocate for decarceration, improved emergency plans for carceral facilities, and increased climate resilience."),
                br(),
                br(),
-style = "padding: 20px 100px 40px 20px"
-),
+               br(),
+               h4(strong("Acknowledgement")),
+               br(),
+               p("We recognize that this information may be upsetting for individuals, particularly those that are or were housed,
+                 or have loved ones that are or were housed within these facilities. This is a layered and challenging topic.
+                 Please know that we are with you on this journey. If you are open to sharing, we welcome your feedback to improve this project."),
+               br(),
+               p("You may contact us at ebaker00@bren.ucsb.edu."),
+            style = "padding: 20px 100px 40px 20px"),
 
 tags$footer(
   h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
             U.S. Carceral Facilities to Environmental Hazards")),
-  h6(em("Created by Matthieu Huy for Environmental Science and Management 244
-        (Advanced Data Analytics)")),
+  h6(em("Created by Matthieu Huy. In partnership with Elijah Baker, and guidance from Dr. Summer Gray and Dr. David Pellow")),
   br(),
   style =
     "float:      center;
@@ -558,7 +572,29 @@ tabPanel("References",
            tags$div(h1("References", style = "font-weight: bold")),
            tags$div(
              br(),
-             p(a("Bernd, C., Loftus-Farren, Z., & Maureen Nandini Mitra. (1 June, 2017).",
+             h3(strong("Home")),
+             p(a("“Climate and Punishment — Mass Incarceration in an Age of Environmental Crisis, an Investigation by The Intercept.”  (2022)",
+                 href = 'https://theintercept.com/series/climate-and-punishment/. '),
+               em('The Intercept'), '(accessed 25 Aug. 2022).'),
+             br(),
+             p(a(em("LASSO : Locating and Selecting Scenarios Online."),
+                 href = "https://lasso.epa.gov"),
+               "Environmental Protection Agency."),
+             br(),
+             p(a("“New Orleans: Prisoners Abandoned to Floodwaters.” (21 Sept. 2005)",
+                 href = 'https://www.hrw.org/news/2005/09/21/new-orleans-prisoners-abandoned-floodwaters.'),
+               em('Human Rights Watch')),
+             br(),
+             p(a("Skelton, Renee, and Miller, Vernice,",
+                 href = "https://www.nrdc.org/stories/environmental-justice-movement."),
+               em("The Environmental Justice Movement")),
+             br(),
+             p(a("Toman, Elisa L. (July 2022).",
+                 href = "https://doi.org/10.1177/14624745221114826."),
+               '"Something in the Air: Toxic Pollution in and around U.S. Prisons."', em('Punishment & Society, SAGE Journals')),
+             h3(strong("Superfund Sites")),
+             h3(strong("Heat Risk")),
+             p(a("Bernd, C., Loftus-Farren, Z., & Maureen Nandini Mitra. (1 June. 2017).",
                  href ="https://truthout.org/articles/america-s-toxic-prisons-the-environmental-injustices-of-mass-incarceration/"),
                '"America’s Toxic Prisons: The Environmental Injustices of Mass Incarceration."', em("Truthout.")),
              br(),
@@ -655,6 +691,8 @@ server <- function(input, output, session) {
       tm_fill(col = "lightgrey",
               alpha = 0.3) +
       tm_polygons() +
+      tm_shape(superfund_sf) +
+      tm_dots() +
       tm_shape(superfund_buffers_3m_sf) +
       tm_fill(col = "red",
               alpha = 0.3) +
@@ -804,3 +842,9 @@ shinyApp(ui = ui, server = server)
         # social and climate justice
         # tool to show "medical health concerns in this group, tool shows this prison could be in area of concern"
         # Fletcher scholarship for "research dexription" or RA-ship
+
+
+#### superfund map
+# add superfund_csv data to geometry: name, score, status , site_epa_id, status2
+# change colors based on status2
+# prison points: different shapes based on ownership insteads of colors
