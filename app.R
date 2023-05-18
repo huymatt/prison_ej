@@ -706,6 +706,7 @@ server <- function(input, output, session) {
               id = "namelsad",
               popup.vars = c()) +
       tm_polygons() +
+<<<<<<< HEAD
       tm_shape(superfund_noprison_3_sf) +
       tm_fill(col = "blue",
               alpha = 0.1,
@@ -713,6 +714,11 @@ server <- function(input, output, session) {
               popup.vars = c("site_name", "site_score", "status_2")) +
       tm_polygons("site_name") +
       tm_shape(superfund_withprisons_3_sf) +
+=======
+      tm_shape(superfund_sf) +
+      tm_dots() +
+      tm_shape(superfund_buffers_3m_sf) +
+>>>>>>> 54a839e1e3be2d354a7c9c8ef7168f36abe6a110
       tm_fill(col = "red",
               alpha = 0.1,
               id = "site_name",
@@ -874,6 +880,12 @@ shinyApp(ui = ui, server = server)
 
 
 #### superfund map
+<<<<<<< HEAD
 # prison points: different shapes based on ownership insteads of colors
   # impossible while using tmap_mode("view"), only works in "plot" mode, so would need to sacrifice interactivity
 # add note explaining site_score for superfunds
+=======
+# add superfund_csv data to geometry: name, score, status , site_epa_id, status2
+# change colors based on status2
+# prison points: different shapes based on ownership insteads of colors
+>>>>>>> 54a839e1e3be2d354a7c9c8ef7168f36abe6a110

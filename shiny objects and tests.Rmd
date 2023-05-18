@@ -68,6 +68,12 @@ superfund_withprisons_3_sf <-  st_transform(superfund_withprisons_3_sf, st_crs(c
 ### takes too long to run, need to find alternative
 
 
+superfund_buffers_3m_sf <-  st_set_crs(superfund_buffers_3m_sf, st_crs(county_sf))
+
+#superfund_buffers_3m_data <- st_intersection(superfund_sf, superfund_buffers_3m_sf)
+### takes too long to run, need to find alternative
+
+
 ### prison locations from US Bureau of Prisons
 
 prison_boundaries_sf <- read_sf(here("data/Prison_Boundaries/Prison_Boundaries.shp")) |>
@@ -80,6 +86,10 @@ summary(prison_boundaries_sf$type)
 prison_boundaries_sf <- st_transform(prison_boundaries_sf, st_crs(superfund_withprisons_3_sf))
 
 #superfund_withprisons_3_sf <- st_intersection(superfund_withprisons_3_sf, prison_boundaries_sf)
+
+prison_boundaries_sf <- st_transform(prison_boundaries_sf, st_crs(superfund_buffers_3m_sf))
+
+superfund_buffers_withprisons <- st_intersection(superfund_buffers_3m_sf, prison_boundaries_sf)
 
 ### convert all caps county names to match names in county_sf
 prison_boundaries_sf$county <- str_to_title(prison_boundaries_sf$county)
