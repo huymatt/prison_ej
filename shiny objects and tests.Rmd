@@ -47,20 +47,45 @@ superfund_sf <- st_set_crs(superfund_sf, st_crs(county_sf))
 #st_crs(superfund_sf) ### EPSG 4296
 
 ### superfund 1 mile and 3 mile buffers
-superfund_buffers_1m_sf <- read_sf(here("data/superfund_data/active_sites_1.shp"))
+### superfund 1 mile and 3 mile buffers
+superfund_noprison_1_sf <- read_sf(here("data/superfund_data/sites_withprisons_1.shp")) |>
+  clean_names() |>
+  filter(join_count == "0")
+superfund_withprisons_1_sf <- read_sf(here("data/superfund_data/sites_withprisons_1.shp")) |>
+  clean_names() |>
+  filter(join_count == "1")
 
-superfund_buffers_3m_sf <- read_sf(here("data/superfund_data/active_sites_3mile.shp"))
+superfund_noprison_3_sf <- read_sf(here("data/superfund_data/sites_withprisons_3.shp")) |>
+  clean_names() |>
+  filter(join_count == "0")
+superfund_withprisons_3_sf <- read_sf(here("data/superfund_data/sites_withprisons_3.shp")) |>
+  clean_names() |>
+  filter(join_count == "1")
+
+superfund_withprisons_3_sf <-  st_transform(superfund_withprisons_3_sf, st_crs(county_sf))
+
+#superfund_buffers_3m_data <- st_intersection(superfund_sf, superfund_buffers_3m_sf)
+### takes too long to run, need to find alternative
+
 
 ### prison locations from US Bureau of Prisons
 
 prison_boundaries_sf <- read_sf(here("data/Prison_Boundaries/Prison_Boundaries.shp")) |>
-  clean_names()
+  clean_names() |>
+  filter(type %in% c("COUNTY", "FEDERAL", "LOCAL", "STATE"))
+
+
+summary(prison_boundaries_sf$type)
+
+prison_boundaries_sf <- st_transform(prison_boundaries_sf, st_crs(superfund_withprisons_3_sf))
+
+#superfund_withprisons_3_sf <- st_intersection(superfund_withprisons_3_sf, prison_boundaries_sf)
 
 ### convert all caps county names to match names in county_sf
 prison_boundaries_sf$county <- str_to_title(prison_boundaries_sf$county)
 
 ### set crs for superfund buffers and prisonsto same same county_sf
-superfund_buffers_3m_sf <- st_set_crs(superfund_buffers_3m_sf, st_crs(county_sf))
+#superfund_buffers_3m_sf <- st_set_crs(superfund_buffers_3m_sf, st_crs(county_sf))
 prison_boundaries_sf <- st_transform(prison_boundaries_sf, st_crs(county_sf))
 
 ### county heat data (current days above 100F from union of concerned scientists)
@@ -312,6 +337,55 @@ tm_shape(temp3_raster_avg_raster) + ### raster package
 
 # why does the terra raster stack and mean yield higher values then the raster package stack and mean?
 ### use app(x, mean) instead of reduce(x, mean)
+```
+```{r}
+county_prisons <- prison_boundaries_sf |>
+      filter(state == "CA") |>
+      filter(county == "Los Angeles")
+
+county_filtered <- county_sf |>
+  filter(name == "Los Angeles")
+
+tmap_mode("view")
+
+#tm_shape(county_filtered) +
+     # tm_fill(col = "lightgrey",
+            #  alpha = 0.3,
+            #  id = "namelsad",
+            #  popup.vars = c()) +
+     # tm_polygons() +
+      tm_shape(superfund_noprison_3_sf) +
+      tm_fill(col = "blue",
+              alpha = 0.3,
+              id = "site_name",
+              popup.vars = c("site_name", "site_score", "status_2")) +
+      tm_polygons("site_name") +
+      tm_shape(superfund_noprison_1_sf) +
+      tm_fill(col = "darkblue",
+              alpha = 0.3,
+              id = "site_name",
+              popup.vars = c("site_name", "site_score", "status_2")) +
+      tm_polygons("site_name") +
+      tm_shape(superfund_withprisons_3_sf) +
+      tm_fill(col = "red",
+              alpha = 0.3,
+              id = "site_name",
+              popup.vars = c("site_name", "site_score", "status_2")) +
+      tm_polygons("site_name") +
+      tm_shape(superfund_withprisons_1_sf) +
+      tm_fill(col = "darkred",
+              alpha = 0.3,
+              id = "site_name",
+              popup.vars = c("site_name", "site_score", "status_2")) +
+      tm_polygons() +
+      tm_shape(prison_boundaries_sf) +
+      tm_dots(id = "name",
+              col = "type",
+              palette = c("gray90"),
+              popup.vars = c("name", "address", "city", "county", "telephone",
+                             "type", "status", "population", "capacity", "securelvl"),
+              size = 0.035,
+              legend.show = FALSE)
 ```
 
 
