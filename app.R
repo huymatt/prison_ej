@@ -358,8 +358,8 @@ tabPanel("Superfund Sites",
          tags$div(
            h3(strong("Background")),
            br(),
-           p(strong('From Baker E., Puig-Santana, A., Kaveh, S., Lenihan, T. "Assessing the risk and proximity of carceral facilities
-               to superfund sites." (in preparation):')),
+           p('From Baker E., Puig-Santana, A., Huy, M. P. "Assessing the risk and proximity of carceral facilities
+               to superfund sites."', strong(('in preparation'))),
            p("In 1980 Congress established the Comprehensive Environmental Response,
              Compensation, and Liability Act (CERCLA), informally referred to as Superfund,
              to address the mismanagement of hazardous waste throughout the United States.
@@ -418,9 +418,9 @@ style = "padding: 20px 100px 40px 20px"
              challenging because of the fact that no two superfund sites are the same. In addition,
              carceral facilities located near or at a Superfund site can expose individuals with little
              to no agency to change their conditions to a myriad of hazards and toxins - resulting in
-             environmental injustice. Currently, approximately 600 federal and state prisons fall within
-             a 3-mile radius of a listed Superfund site, with over 100 falling within a 1-mile radius of
-             a hazardous site (Bernd et al., 2017)"),
+             environmental injustice. Currently, over 900 facilities fall within
+             a 3-mile radius of a Superfund site, with over 100 falling within a 1-mile radius of
+             hazardous sites (Bernd et al., 2017)."),
              br(),
              br(),
              br(),
@@ -470,7 +470,7 @@ tabPanel("Heat Risk",
                 z-index:    1;"),
            h3(strong("Background")),
               br(),
-              p("Heat-related deaths in are not uncommon in U.S. Prisons during the hot summer months of June, July, and August.
+              p("Heat-related deaths are not uncommon in U.S. Prisons during the hot summer months of June, July, and August.
                 Incarcerated people are uniquely vulnerable to heat-related illness for a multitude of reasons.
                 People in prison are disproportionately diagnosed with diseases such as diabetes and have been found to age
                 more rapidly while incarcerated. Mental-illness is also much more prevalent among incarcerated people, and
@@ -706,36 +706,30 @@ server <- function(input, output, session) {
               id = "namelsad",
               popup.vars = c()) +
       tm_polygons() +
-<<<<<<< HEAD
       tm_shape(superfund_noprison_3_sf) +
       tm_fill(col = "blue",
-              alpha = 0.1,
+              alpha = 0.3,
               id = "site_name",
               popup.vars = c("site_name", "site_score", "status_2")) +
       tm_polygons("site_name") +
       tm_shape(superfund_withprisons_3_sf) +
-=======
-      tm_shape(superfund_sf) +
-      tm_dots() +
-      tm_shape(superfund_buffers_3m_sf) +
->>>>>>> 54a839e1e3be2d354a7c9c8ef7168f36abe6a110
       tm_fill(col = "red",
-              alpha = 0.1,
+              alpha = 0.6,
+              id = "site_name",
+              popup.vars = c("site_name", "site_score", "status_2")) +
+      tm_polygons("site_name") +
+      tm_shape(superfund_noprison_1_sf) +
+      tm_fill(col = "darkblue",
+              alpha = 0.3,
               id = "site_name",
               popup.vars = c("site_name", "site_score", "status_2")) +
       tm_polygons("site_name") +
       tm_shape(superfund_withprisons_1_sf) +
       tm_fill(col = "darkred",
-              alpha = 0.1,
+              alpha = 0.6,
               id = "site_name",
               popup.vars = c("site_name", "site_score", "status_2")) +
       tm_polygons() +
-      tm_shape(superfund_noprison_1_sf) +
-      tm_fill(col = "darkblue",
-              alpha = 0.1,
-              id = "site_name",
-              popup.vars = c("site_name", "site_score", "status_2")) +
-      tm_polygons("site_name") +
       tm_shape(county_prisons) +
       tm_dots(id = "name",
               col = "type",
@@ -776,6 +770,8 @@ server <- function(input, output, session) {
         tm_dots(id = "name",
                 col = "type",
                 palette = "gray90",
+                popup.vars = c("name", "address", "city", "county", "telephone",
+                               "type", "status", "population", "capacity", "securelvl"),
                 size = 0.010,
                 legend.show = FALSE)
 
@@ -794,6 +790,8 @@ server <- function(input, output, session) {
         tm_dots(id = "name",
                 col = "type",
                 palette = c("gray90"),
+                popup.vars = c("name", "address", "city", "county", "telephone",
+                               "type", "status", "population", "capacity", "securelvl"),
                 size = 0.01,
                 legend.show = FALSE)
     }
@@ -880,12 +878,9 @@ shinyApp(ui = ui, server = server)
 
 
 #### superfund map
-<<<<<<< HEAD
 # prison points: different shapes based on ownership insteads of colors
   # impossible while using tmap_mode("view"), only works in "plot" mode, so would need to sacrifice interactivity
 # add note explaining site_score for superfunds
-=======
 # add superfund_csv data to geometry: name, score, status , site_epa_id, status2
 # change colors based on status2
 # prison points: different shapes based on ownership insteads of colors
->>>>>>> 54a839e1e3be2d354a7c9c8ef7168f36abe6a110
