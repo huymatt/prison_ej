@@ -331,7 +331,7 @@ ui <- shiny::navbarPage(theme = "shiny_theme.css",
                  or have loved ones that are or were housed within these facilities. This is a layered and challenging topic.
                  Please know that we are with you on this journey. If you are open to sharing, we welcome your feedback to improve this project."),
                br(),
-               p("You may contact us at ebaker00@bren.ucsb.edu."),
+               p("You may contact us at matthieu.huy@gmail.com or ebaker00@bren.ucsb.edu."),
             style = "padding: 20px 100px 40px 20px"),
 
 tags$footer(
@@ -359,7 +359,7 @@ tabPanel("Superfund Sites",
            h3(strong("Background")),
            br(),
            p('From Baker E., Puig-Santana, A., Huy, M. P. "Assessing the risk and proximity of carceral facilities
-               to superfund sites."', strong(('in preparation'))),
+               to superfund sites."', strong('(in preparation)')),
            p("In 1980 Congress established the Comprehensive Environmental Response,
              Compensation, and Liability Act (CERCLA), informally referred to as Superfund,
              to address the mismanagement of hazardous waste throughout the United States.
@@ -373,9 +373,9 @@ tabPanel("Superfund Sites",
               of a Superfund site. These include, but are not limited to: airports, power plants,
               hazardous landfills, waste incinerators, and mining and extractive activities.
               These are all examples of what land use planners refer to as “locally undesirable
-              land uses” (LULUs). Opsal and Malin argue that prisons themselves are another form of
+              land uses” (LULUs).", a('Tara Opsal and Stephanie Malin', href = 'https://onlinelibrary.wiley.com/doi/10.1111/soin.12290'), "argue that prisons themselves are another form of
               LULU, as they are pushed out of wealthy communities and into poorer or more marginalized
-              communities. (Opsal and Malin, 2020) Because Superfund sites are hazardous, they have often been utilized for
+              communities. Because Superfund sites are hazardous, they have often been utilized for
               siting LULUs, including prisons."),
 
            br(),
@@ -419,8 +419,8 @@ style = "padding: 20px 100px 40px 20px"
              carceral facilities located near or at a Superfund site can expose individuals with little
              to no agency to change their conditions to a myriad of hazards and toxins - resulting in
              environmental injustice. Currently, over 900 facilities fall within
-             a 3-mile radius of a Superfund site, with over 100 falling within a 1-mile radius of
-             hazardous sites (Bernd et al., 2017)."),
+             a 3-mile radius of a Superfund site,", a('with over 100 falling within a 1-mile radius of
+             hazardous sites.', href = 'https://truthout.org/articles/america-s-toxic-prisons-the-environmental-injustices-of-mass-incarceration/')),
              br(),
              br(),
              br(),
@@ -428,12 +428,11 @@ style = "padding: 20px 100px 40px 20px"
            )
          ), #end mainPanel
 
-         tags$footer(
-           h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
+tags$footer(
+  h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
             U.S. Carceral Facilities to Environmental Hazards")),
-           h6(em("Created by Matthieu Huy for Environmental Science and Management 244
-        (Advanced Data Analytics)")),
-        br(),
+  h6(em("Created by Matthieu Huy. In partnership with Elijah Baker, and guidance from Dr. Summer Gray and Dr. David Pellow")),
+  br(),
         style =
           "float:      center;
                 text-align: left;
@@ -470,21 +469,28 @@ tabPanel("Heat Risk",
                 z-index:    1;"),
            h3(strong("Background")),
               br(),
-              p("Heat-related deaths are not uncommon in U.S. Prisons during the hot summer months of June, July, and August.
-                Incarcerated people are uniquely vulnerable to heat-related illness for a multitude of reasons.
-                People in prison are disproportionately diagnosed with diseases such as diabetes and have been found to age
-                more rapidly while incarcerated. Mental-illness is also much more prevalent among incarcerated people, and
-                drugs used to treat certain mental illnesses are known to cause heat-sensitivity (Brown, 2023).
+              p("Extreme heat is the", a('leading cause of death', href = 'https://www.who.int/news-room/fact-sheets/detail/climate-change-heat-and-health#:~:text=Heat%20stress%20is%20the%20leading,a%20high%2Dcase%20fatality%20rate'),
+                "from natural disasters globally, with extreme heat events in 2023", a('breaking records for heat-related deaths in the U.S.', href = 'https://www.wusf.org/health-news-florida/2024-06-02/ap-analysis-2023-record-us-heat-deaths-florida'),
+                "Heat-related illness and deaths are not uncommon in U.S. prisons, jails, and detention centers.
+                The likelihood and intensity of extreme heat events is increasing as a result of climate change,
+                and with it, the risk to incarcerated people. However, these deaths are preventable."),
 
-                A study by Julie Skarha published in the peer-reviewed scientific journal PLOS ONE established a link
-                between extreme heat and prison mortality. Researchers found that a temperature increase of 10-degrees above
+              p("Incarcerated people are uniquely vulnerable to heat-related illness for a multitude of reasons.
+                The most pressing reason is that incarcerees lack the ability to alter their living conditions.
+                They cannot open or close windows and cannot bring in air conditioning. In addition, people in prison are
+                disproportionately diagnosed with diseases such as diabetes or hypertension that make individuals",
+                a('particularly susceptible to harm from extreme heat.', href = 'https://grist.org/equity/new-study-people-dying-extreme-heat-in-prisons-us/?utm_campaign=Hot+News&utm_medium=email&_hsmi=248459899&_hsenc=p2ANqtz-_hs_Me2aJ16fjDL4QWqfYYLYqxauPN0cPn53EtXGqGdrmizF5SOAosR13LzqXTp-syv-1cFVsm04Zx3ULwnNFs3m8rDA&utm_content=248459899&utm_source=hs_email'),
+                "Mental-illness is also prevalent among incarcerated people, and drugs used to treat certain mental illnesses",
+                a('are known to cause heat-sensitivity.', href = 'https://www.prisonpolicy.org/blog/2019/06/18/air-conditioning/')),
+
+              p(a('A study published in the peer-reviewed scientific journal PLOS ONE', href = 'https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0281389'),
+                'established a link between extreme heat and prison mortality. Researchers found that a temperature increase of 10-degrees above
                 the average was associated with a significant increase in prison mortality, with deaths increasing 5.2% - or 6.7%
                 among people diagnosed with heart disease. Although no publicly available national
                 data exists to indicate prisons that lack air conditioning, the increase in mortality was much higher
                 in the Northeast, at 21%, where prisons are less likely to have air conditioning or to be
-                prepared to handle heatwaves. Shockingly, Suicide rates increased by 22.8% in the three days
-                following an extreme heat event, as desperate prisoners reach a dangerous tipping point during these periods (Skarha et al., 2023)."),
-
+                prepared to handle heatwaves. Shockingly,', a('Suicide rates increased by 22.8%', href = 'https://pubmed.ncbi.nlm.nih.gov/36857338/'), 'in the three days
+                following an extreme heat event, as desperate prisoners reach a dangerous tipping point during these periods.'),
            br(),
 
            tags$div(
@@ -530,12 +536,14 @@ tabPanel("Heat Risk",
            tags$div(
              br(),
              p("Across the U.S, the number of days with a heat index above 100°F is expected to
-               increase substantially by midcentury, with some areas that rarely experienced such heat
-               being subject to it for the first time. Results from combining multiple climate change
-               models by the EPA also predict an increase in average daily temperatures across the U.S. As
-               this new reality comes into being, extreme heat events will become more frequent as will heat-related
-               deaths in prisons. Prisons are not equipped to protect inmates from prolonged exposure to heat.
-               This data highlights the need for prison reform and is a call to action for policymakers."),
+               increase substantially by midcentury (years 2036-2065), with some areas that rarely experienced such heat in the past
+               being subject to it regularly for the first time."),
+             p("By combining multiple climate change models by the EPA, we predict an increase in average daily temperatures across the U.S. As
+               this new reality comes to pass, extreme heat events will become more frequent as will heat-related
+               deaths in prisons. Many carceral facilities are not equipped to protect inmates from prolonged exposure to heat currently.
+               These facilities and more are woefully unprepared to address extreme heat events by mid-century predicted by our model."),
+             p("This data highlights the need for prison reform and is a call to action for policymakers to 1) provide effective protections against extreme heat to incarcerated people
+               and 2) reduce prison populations."),
              br(),
              br(),
              br(),
@@ -550,9 +558,8 @@ tabPanel("Heat Risk",
          tags$footer(
            h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
             U.S. Carceral Facilities to Environmental Hazards")),
-           h6(em("Created by Matthieu Huy for Environmental Science and Management 244
-        (Advanced Data Analytics)")),
-        br(),
+           h6(em("Created by Matthieu Huy. In partnership with Elijah Baker, and guidance from Dr. Summer Gray and Dr. David Pellow")),
+           br(),
         style =
           "float:      center;
                 text-align: left;
@@ -564,6 +571,237 @@ tabPanel("Heat Risk",
                 z-index:    1;"
          ) #end footer
 ), #end Heat Risk
+
+##### Case Study #################################
+
+tabPanel("Case Study",
+         tags$div(
+           h3(strong("Case Studies")),
+           br(),
+           p("The case studies shown on this page serve two purposes. 1) They highlight high-profile and egregious cases where incarcerated
+             people are exposed to dangerous levels of pollutants or extreme heat in a way that puts their health at risk. 2) They exemplify how
+             you - the user - can use this tool to conduct your own research by using the maps to find a facility of interest that overlaps with a Superfund site
+             or is subject to extreme heat. Using the information from the tool on the site, you can then conduct your own case study on any facility."),
+           tabsetPanel(
+           tabPanel("Northwest Detention Center",
+
+           h3(strong("The Northwest Detention Center, Tacoma Washington")),
+           br(),
+           img(src = "northwest_2.jpg", height = "100%", width = "100%%"),
+           br(),
+           br(),
+           br(),
+           p("Housing up to 1,575 immigrant men, women, and children, the Northwest Detention Center (NWDC) in Tacoma, Washington is one
+             of the largest immigrant detention centers in the United States (NWIRP). It is owned and operated by a private company, the
+             GEO Group, on behalf of US Immigration and Customs Enforcement (ICE). The facility opened in 2004 directly adjacent to the
+             Commencement Bay Tideflats Superfund site following a problematic siting process that prioritized economic interest and over
+             the health and safety of incarcerated people."),
+           br(),
+           style = "padding: 20px 100px 40px 20px",
+           #end intro part of NWDC tab
+         tabsetPanel(
+           tabPanel("The Superfund Site",
+           h3(strong("The Commencement Bay Tideflats Superfund Site")),
+           br(),
+           h4(strong("“Then the smells started coming. A strong petro chemical smell so strong that it permeats everything, gives us
+                    headaches and makes my dog sneeze. There are times it is so bad I have to shut my windows or run home while on a
+                    walk and try to protect myself indoors.”"),
+              style =
+                "float:      center;
+                text-align: center;"),
+           p("-Sara Wood, Northeast Tacoma Resident, expressing concerns during a public comment period discussing future industrial
+            projects at the site (City of Tacoma 2017)",
+            style =
+              "float:      center;
+                text-align: center;
+                bottom:     40px;
+                width:      100%;
+                color:      gray;
+                padding:    0px 0px 40px 20px;
+                z-index:    1;"),
+           img(src = "tacoma_superfund_epa_v2.png", height = "100%", width = "100%"),
+           br(),
+           br(),
+           p("(Left) the Commencement Bay Tideflats Superfund Site and NWDC as shown in the interactive mapping tool.
+             (Right) The Commencement Bay Tideflats Superfund Site as mapped by the USEPA in 2022. A white polygon showing the location of the NWDC has been added. The Green area
+             labelled OU3 shows the Tacoma Tar Pits. Referencing the tar pits in their 2022 report, the EPA states they continue to work with
+             responsible parties to monitor the clean up of sight and “may conduct an optimization study in the next couple
+             of years“ (USEPA 2022).",
+             style = "color:      gray;"),
+           br(),
+           br(),
+           p("For thirty years, a coal-gasification plant leeched coal-tar wastes into the soil and groundwater of
+             the Tacoma Tideflats. The area, which became known as the Tacoma Tar Pits, was included in the Commencement
+             Bay Tideflats Superfund site (ID: WAD980726368) when the EPA designated it as a high priority toxic site in
+             1983 due to high levels of volatile organic compounds and heavy metals in the groundwater and soil (U.S. Congress).
+             The USEPA superfund contaminant list shows this area to be polluted with 27 different compounds, including antimony,
+             arsenic, benzene, beryllium, cadmium, chromium VI, copper, lead, manganese, mercury, nickel, polychlorinated biphenyls,
+             polycyclic aromatic hydrocarbons, selenium, silver, tetrachloroethylene, thallium, and zinc. These toxic compounds are
+             found in soil, sediment, surface water, groundwater, and in the air on site (USEPA 2023). The quote above supports
+             that these chemicals and toxic compounds are present in the air coming from this site. Being that residents of northeast Tacoma are not even
+             living on the premises, it is likely that immigrant detainees at the Northwest Detention Center are suffering to a much
+             greater degree"),
+          br(),
+          br(),
+           ), #end Superfund Site tab
+         tabPanel("Health Impacts",
+         h3(strong("Health Impacts to Detainees")),
+         br(),
+         p(strong("Through breathing contaminated air, skin exposure, and water supplies, immigrants incarcerated at the NWDC can ingest the
+             toxins present in the area which can lead to skin irritation, respiratory infections, developmental difficulties, cancers,
+             organ failure, and early death (Pellow and Varzin 2019)."), "It is important to note that health problems caused by the environmental
+             hazards at the NWDC are difficult to track and identify because detainees are constantly being deported or moved and are hard to
+             track after they leave the facility. However, it is clear that this area should never be used to house human beings."),
+         br(),
+         ), #end Health tab
+         tabPanel("Natural Disasters",
+         h3(strong("Exposure to Natural Disasters")),
+         br(),
+         h4(strong("“In 2007, more than 900 pounds vaporized of poisonous chlorine gas leaked from the Pioneer Americas bleach plant at the Port of Tacoma,
+                     sending at least 38 people to area hospitals. The lock-down detention center was just outside the evacuation zone designated for the
+                     potentially deadly gas plume.”"),
+            style =
+              "float:      center;
+                text-align: center;"),
+         p("-Reported by the Tacoma News Tribune, this shows that emergency evacuation scenarios like those described above are not merely theoretical (Kamb 2012).",
+           style =
+             "float:      center;
+                text-align: center;
+                bottom:     40px;
+                width:      100%;
+                color:      gray;
+                padding:    0px 0px 40px 20px;
+                z-index:    1;"),
+         p("The NWDC is built on a low-lying floodplain where soils are expected to liquify or shift dramatically during an earthquake, and
+             the area would be completely wiped out in the event of a tsunami hitting the Puget Sound  (Pellow and Varzin 2019). Additionally,
+             if nearby Mt. Rainier erupts, studies have shown that the area lies directly in the path of the volcanic mudslides that would follow (USGS 2016).
+             The GEO group would have extremely limited time to evacuate almost 1500 detainees if any of these disasters occured, and yet has never released
+             their emergency plans to the public (Pellow and Varzin 2019). They have reportedly ignored agreements and refused requests to provide local news
+             outlets and city officials with copies of such plans when prompted to do so (Kamb 2012)."),
+         br(),
+         br(),
+         ), # end Natural Disasters
+         tabPanel("The Problematic Siting Process",
+         h3(strong("The Problematic Siting Process of the Northwest Detention Center")),
+         br(),
+         p("Federal reports initially recommended the facility be built on a different site near the commercial port of Tacoma. A draft of the federal
+           environmental impact statement in 2001 initially deemed the site where the NWDC ended up being built to be unfit because it contained excessive
+           hazardous waste and was located adjacent to the Tacoma Tar Pits, posing “an unidentified risk” and “liability concerns” for the federal government (Kamb 2012).
+           However, after pushback from port officials and local politicians, the initial recommendation was changed to express no preference between the two potential
+           sites (Kamb 2012)."),
+         br(),
+         p(strong("“If we had to have it in Tacoma,” said Tacoma City Councilman Kevin Phelps during a 2012 interview, “I’d rather help try to encourage where it went, and
+                  we didn’t want it on prime port property… Tacoma will make every possible effort to keep the INS from constructing a facility on this site” (Kamb 2012).")),
+         br(),
+         p("In December of 2001, the project was approved for construction at the site adjacent to the Tacoma Tar pits. The nearby Seattle Detention Center had reached maximum
+           capacity by 1999, and this decision came at a time where there had been a significant increase in immigration to the U.S. and soon after the terrorist attacks of
+           September 11, 2001, both of which contributed to sweeping changes in immigration policy and drove demand for such facilities. "),
+         br(),
+         br(),
+         br(),
+         ), #end siting process tab
+         tabPanel("Resistance and Progress",
+         br(),
+         h3(strong("Resistance at the Northwest Detention Center")),
+         br(),
+         img(src = "nwdcprotest.png", height = "100%", width = "100%"),
+         br(),
+         br(),
+         p("Demonstrators hold up signs while chanting in English and Spanish outside of the Northwest Detention Center protesting living conditions and opposing deportations on March 11, 2014.
+           --Thomas Soerenes—The Tacoma News Tribune",
+           style = "color:      gray;"),
+         br(),
+         br(),
+         p("Prisoners have organized hunger strikes and other forms of resistance within the facility, including in 2014, 2017, and 2023 to protest their living conditions,
+           citing concerns about abuse, food quality, and inadequate medical care, among other issues (Pellow and Vazin 2019). During a recent act of resistance in February of 2023,
+           the grassroots group La Resistencia, which advocates “for the closing of the facility and an end to all detentions and deportations,” alleged in a news release Feb. 6
+           that “tear gas” was used to control detainees after they asked another unit “to join in a protest against worsening conditions,” spreading beyond the intended target and
+           reaching other parts of the facility. When prompted by local news outlets, ICE and the GEO group justified their actions and refused to share any written or video documentation
+           related to the incident or the treatment of detainees exposed to chemicals, documentation that is required in federal standards about the use of force (Krell 2023). From outside
+           the prison, organizations such as the Northwest Immigrant Rights Project, La Resistencia, and the Northwest Detention Center Resistance Coalition have fought to expose and
+           improve conditions for detainees, provided them with legal resources, and staged protests."),
+         br(),
+         p("While the Northwest Detention Center continues to operate, these resistance efforts within and outside of the facility have led to much greater media attention on the living
+           conditions at the center. Several lawsuits have been filed and new state legislation has been proposed to provide greater protections for detainees (Pellow and Varzin 2019).
+           In 2023, the state of Washington passed a bill to create stronger health and safety protections for people detained in private prisons with the goal of bringing more state
+           oversight into the Northwest Detention Center. However, the GEO group denied access to Washington state health and workplace inspectors twice in 2023 and is suing the state
+           over the bill, arguing the policy is unconstitutional because it interferes with federal immigration enforcement (Deng 2024)."),
+         br(),
+         ) #end resistance tab
+         ), # end NWDC sub tabs
+         ), # end NWDC tab
+         tabPanel("Angola Prison",
+                  h3(strong("Louisiana State Penitentiary (Angola), West Feliciana Parish, Louisiana")),
+                  br(),
+                  img(src = "angola1.jpeg", height = "100%", width = "100%%"),
+                  br(),
+                  br(),
+                  br(),
+                  p("Notoriously known as Angola, after the former slave plantation that occupied the land, Louisiana State Penitentiary
+                    is the nation’s largest adult maximum security prison, housing 6,300 prisoners and 1,800 staff. Louisiana has the highest
+                    rate of incarceration in the world, with 1 of every 91 residents behind bars in 2021."),
+             br(),
+             style = "padding: 20px 100px 40px 20px",
+             tabsetPanel(
+               tabPanel("Extreme Heat Getting Worse",
+                        br(),
+                        h3(strong("Extreme Heat Expected to Get Worse in Louisiana")),
+                        br(),
+                        img(src = "louisiana3.png", height = "100%", width = "100%"),
+                        br(),
+                        br(),
+                        p("(Left) Historical number of days per year above 100°F in Louisiana, and (Right) Expected number of days per year above 100°F by midcentury, as modeled by our tool",
+           style = "color:      gray;"),
+           br(),
+           br(),
+           p("According to climate models, and as seen in the map found under the Heat Risk tab, the state
+             also experiences over 30 days per year above 100 degrees fahrenheit and is expected to experience 80 or more by midcentury."),
+               ), # end heat subtab
+           tabPanel("Legal Battles",
+                    br(),
+                    h3(strong("Legal Battles")),
+                    br(),
+                    p("In 2016, the state of Louisiana’s corrections department and attorney general’s
+                      office spent over $1,067,000 in taxpayer money fighting a lawsuit filed on behalf
+                      of three inmates with medical issues who claimed they were exposed to dangerous heat levels in their cells.")),
+               tabPanel("Racial disparities and Labor practices",
+               br(),
+               h3(strong("Racial disparities and Labor practices")),
+               br(),
+               p("Many of those incarcerated at Angola, 74% of whom are Black, labor in farm fields for as
+                 little as 2 cents an hour and report being placed in solitary confinement for being unwilling
+                 or unable to perform this work, or if they are working too slowly.")), # end racial subtab
+               tabPanel("Juveniles at Angola",
+                        br(),
+                        h3(strong("Juveniles housed in an adult prison")),
+                        p("Recently, the prison which is only meant to house adults has started housing juveniles
+                          “Since October 2022, 70-80 children, almost all Black boys, have been housed in the former
+                          death row of Angola, where they were subjected to abusive conditions, including solitary confinement
+                          for days—sometimes weeks— at a time, excessive force, and the routine use of handcuffs, restraints, and chemical agents.”"),
+               ), # end kids subtab
+         ), # end Angola subtabs
+         ), # end Angola tab
+         ),
+
+         ), #end mainPanel
+
+         tags$footer(
+           h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
+            U.S. Carceral Facilities to Environmental Hazards")),
+           h6(em("Created by Matthieu Huy. In partnership with Elijah Baker, and guidance from Dr. Summer Gray and Dr. David Pellow")),
+           br(),
+           style =
+             "float:      center;
+                text-align: left;
+                bottom:     40px;
+                width:      100%;
+                height:     10px;
+                color:      gray;
+                padding:    30px 100px 40px 20px;
+                z-index:    1;"
+         )
+         ), #end Case Study
+
 
 ##### References #################################
 
@@ -586,8 +824,9 @@ tabPanel("References",
            tags$div(
              br(),
              h3(strong("Home")),
+             br(),
              p(a("“Climate and Punishment — Mass Incarceration in an Age of Environmental Crisis, an Investigation by The Intercept.”  (2022)",
-                 href = 'https://theintercept.com/series/climate-and-punishment/. '),
+                 href = 'https://theintercept.com/series/climate-and-punishment/ '),
                em('The Intercept'), '(accessed 25 Aug. 2022).'),
              br(),
              p(a(em("LASSO : Locating and Selecting Scenarios Online."),
@@ -595,18 +834,33 @@ tabPanel("References",
                "Environmental Protection Agency."),
              br(),
              p(a("“New Orleans: Prisoners Abandoned to Floodwaters.” (21 Sept. 2005)",
-                 href = 'https://www.hrw.org/news/2005/09/21/new-orleans-prisoners-abandoned-floodwaters.'),
+                 href = 'https://www.hrw.org/news/2005/09/21/new-orleans-prisoners-abandoned-floodwaters'),
                em('Human Rights Watch')),
              br(),
-             p(a("Skelton, Renee, and Miller, Vernice,",
-                 href = "https://www.nrdc.org/stories/environmental-justice-movement."),
+             p(a("Skelton, Renee, and Miller, Vernice. (August 2023)",
+                 href = "https://www.nrdc.org/stories/environmental-justice-movement"),
                em("The Environmental Justice Movement")),
              br(),
              p(a("Toman, Elisa L. (July 2022).",
-                 href = "https://doi.org/10.1177/14624745221114826."),
+                 href = "https://doi.org/10.1177/14624745221114826"),
                '"Something in the Air: Toxic Pollution in and around U.S. Prisons."', em('Punishment & Society, SAGE Journals')),
+             br(),
              h3(strong("Superfund Sites")),
+             br(),
+             p(a("Bernd, C., Loftus-Farren, Z., & Maureen Nandini Mitra. (1 June. 2017).",
+                 href ="https://truthout.org/articles/america-s-toxic-prisons-the-environmental-injustices-of-mass-incarceration/"),
+               '"America’s Toxic Prisons: The Environmental Injustices of Mass Incarceration."', em("Truthout.")),
+             br(),
+             p(a("Opsal, Tara, and Stephanie A. Malin. (May 2019).",
+                 href = "https://onlinelibrary.wiley.com/doi/10.1111/soin.12290"),
+               '"Prisons as LULUs: Understanding the Parallels between Prison Proliferation and Environmental Injustices."', em('Sociological Inquiry')),
+             br(),
+             p(a(em("Superfund: National Priorities List (NPL)."), "(updated 22 Feb. 2023)",
+                 href = "https://www.epa.gov/superfund/superfund-national-priorities-list-npl"),
+               "Environmental Protection Agency. (accessed 25 Aug. 2022)."),
+             br(),
              h3(strong("Heat Risk")),
+             br(),
              p(a("Bernd, C., Loftus-Farren, Z., & Maureen Nandini Mitra. (1 June. 2017).",
                  href ="https://truthout.org/articles/america-s-toxic-prisons-the-environmental-injustices-of-mass-incarceration/"),
                '"America’s Toxic Prisons: The Environmental Injustices of Mass Incarceration."', em("Truthout.")),
@@ -627,21 +881,53 @@ tabPanel("References",
                  href = "https://doi.org/10.1111/soin.12290"),
                '"Prisons as LULUs: Understanding the Parallels between Prison Proliferation and Environmental Injustices."', em("Sociological Inquiry,"), "90(3), 579–602."),
              br(),
-             p(a(em("Prison Boundaries."), " (2020).",
-                 href = "https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::prison-boundaries/about"),
-              "Homeland Infrastructure Foundation Level Data (HIFLD)."),
-             br(),
              p(a("Skarha J, Spangler K, Dosa D, Rich JD, Savitz DA, Zanobetti A (2023).",
                  href = "https://doi.org/10.1371/journal.pone.0281389"),
                '"Heat-related mortality in U.S. state and private prisons: A case-crossover analysis."', em("PLOS ONE.")),
+             br(),
+             h3(strong("Maps")),
+             br(),
+             p(a(em("Prison Boundaries."), " (2020).",
+                 href = "https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::prison-boundaries/about"),
+               "Homeland Infrastructure Foundation Level Data (HIFLD)."),
              br(),
              p(a(em("State and County TIGER/Line Shapefiles."), " (2022).",
                  href = "https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.2022.html#list-tab-790442341"),
                "U.S. Census Bureau."),
              br(),
-             p(a(em("Superfund: National Priorities List (NPL)."), "(updated 22 Feb. 2023)",
-                 href = "https://www.epa.gov/superfund/superfund-national-priorities-list-npl"),
-               "Environmental Protection Agency. (accessed 25 Aug. 2022)."),
+             h3(strong("Case Study")),
+             p(a("“Are We Cleaning Up? 10 Superfund Case Studies–Special Report” (June 1988)",
+                 href = "https://www.princeton.edu/~ota/disk2/1988/8803/880301.PDF"),
+               "U.S. Congress, Office of Technology Assessment."),
+             br(),
+             p(a("“Cleanups in Commencement Bay Nearshore/Tideflats Superfund Site” (May 2022)",
+                 href = "https://semspub.epa.gov/work/10/100400472.pdf"),
+               "Environmental Protection Agency Region 10."),
+             br(),
+             p(a("“Commencement Bay, Near Shore/Tide Flats Tacoma, Wa. Superfund Site Profile”",
+                 href = "https://cumulis.epa.gov/supercpad/SiteProfiles/index.cfm?fuseaction=second.Healthenv&id=1000981"),
+               "Environmental Protection Agency."),
+             br(),
+             p(a("Deng, Grace (January 2024)",
+                 href = "https://washingtonstatestandard.com/2024/01/24/state-inspectors-denied-entry-to-privately-run-immigration-detention-center-in-tacoma/"),
+               "“State inspectors denied entry to privately-run immigration detention center in Tacoma”", em("Washington State Standard.")),
+             br(),
+             p(a("Kamb, Lewis (2012)",
+                 href = "https://www.thenewstribune.com/news/special-reports/article25860412.html"),
+               "“A Rare Look inside Tacoma's Northwest Detention Center”", em("The News Tribune.")),
+             br(),
+             p(a("Krell, Lewis (2023)",
+                 href = "https://www.thenewstribune.com/article272276968.html"),
+               "“How are chemical agents used at the immigration detention center on the Tacoma Tideflats?”", em("The News Tribune.")),
+             br(),
+             p(a("Pellow, David, and Varzin, Jasmine (July 2019)",
+                 href = "https://www.researchgate.net/publication/334607330_The_Intersection_of_Race_Immigration_Status_and_Environmental_Justice"),
+               '"The Intersection of Race, Immigration Status, and Environmental Justice"'),
+             br(),
+
+             p(a("Tideflats Written Public Comments (September 2017)",
+                 href = "https://cms.cityoftacoma.org/Planning/Tideflats/InterimRegulations/Tideflats%20Written%20Comments%20(thru%209-14-17).pdf"),
+               "City of Tacoma Planning & Development Services Department."),
             br(),
             br(),
             br(),
@@ -652,9 +938,8 @@ tabPanel("References",
          tags$footer(
            h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
             U.S. Carceral Facilities to Environmental Hazards")),
-           h6(em("Created by Matthieu Huy for Environmental Science and Management 244
-        (Advanced Data Analytics)")),
-        br(),
+           h6(em("Created by Matthieu Huy. In partnership with Elijah Baker, and guidance from Dr. Summer Gray and Dr. David Pellow")),
+           br(),
         style =
           "float:      center;
                 text-align: left;
@@ -736,7 +1021,7 @@ server <- function(input, output, session) {
               palette = c("grey90"),
               popup.vars = c("name", "address", "city", "county", "telephone",
                              "type", "status", "population", "capacity", "securelvl"),
-              size = 0.025,
+              size = 0.035,
               legend.show = FALSE)
     })
 
@@ -764,7 +1049,7 @@ server <- function(input, output, session) {
                 palette = "YlOrRd",
                 alpha = 0.8,
                 breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90),
-                labels = c("0", "10", "20", "30", "40", "50", "60", "70", "80+")) +
+                labels = c("0 - 10", "10 - 20", "20 - 30", "30 - 40", "40 - 50", "50 - 60", "60 - 70", "70 - 80", "80+")) +
         tm_polygons() +
         tm_shape(state_prisons) +
         tm_dots(id = "name",
@@ -772,7 +1057,7 @@ server <- function(input, output, session) {
                 palette = "gray90",
                 popup.vars = c("name", "address", "city", "county", "telephone",
                                "type", "status", "population", "capacity", "securelvl"),
-                size = 0.010,
+                size = 0.020,
                 legend.show = FALSE)
 
     }
@@ -784,7 +1069,7 @@ server <- function(input, output, session) {
                 palette = "YlOrRd",
                 alpha = 0.8,
                 breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90),
-                labels = c("0", "10", "20", "30", "40", "50", "60", "70", "80+")) +
+                labels = c("0 - 10", "10 - 20", "20 - 30", "30 - 40", "40 - 50", "50 - 60", "60 - 70", "70 - 80", "80+")) +
         tm_polygons() +
         tm_shape(state_prisons) +
         tm_dots(id = "name",
@@ -792,7 +1077,7 @@ server <- function(input, output, session) {
                 palette = c("gray90"),
                 popup.vars = c("name", "address", "city", "county", "telephone",
                                "type", "status", "population", "capacity", "securelvl"),
-                size = 0.01,
+                size = 0.02,
                 legend.show = FALSE)
     }
 
@@ -802,7 +1087,7 @@ server <- function(input, output, session) {
                   palette = "YlOrRd",
                   alpha = 0.8,
                   breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-                  labels = c("0", "1", "2", "3", "4", "5", "6", "7", "8+"),
+                  labels = c("0 - 1", "1 - 2", "2 - 3", "3 - 4", "4 - 5", "5 - 6", "6 - 7", "7 - 8", "8+"),
                   legend.show = TRUE) +
         tm_shape(state_prisons) +
         tm_dots(id = "name",
@@ -810,7 +1095,7 @@ server <- function(input, output, session) {
                 palette = c("gray90"),
                 popup.vars = c("name", "address", "city", "county", "telephone",
                                "type", "status", "population", "capacity", "securelvl"),
-                size = 0.010,
+                size = 0.020,
                 legend.show = FALSE)
     }
   })
