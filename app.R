@@ -257,16 +257,18 @@ state_names <- state_sf |>
 county_state_names_df <- county_sf |>
   as.data.frame() |>
   select(statefp, countyfp, county = name, namelsad) |>
+  mutate(namelsad = gsub("\\s", "", namelsad)) |>
   inner_join(state_names, by = c("statefp")) |>
   mutate(countyfips = paste(statefp, countyfp, sep = "")) |>
-  mutate(state_county = paste(state_abb, namelsad, sep = " ")) |>
+  mutate(state_county = paste(state_abb, namelsad, sep = "")) |>
   select(county, state, countyfips, state_county)
 
 county_state_names_sf <- county_sf |>
   select(statefp, countyfp, county = name, namelsad) |>
+  mutate(namelsad = gsub("\\s", "", namelsad)) |>
   inner_join(state_names, by = c("statefp")) |>
   mutate(countyfips = paste(statefp, countyfp, sep = "")) |>
-  mutate(state_county = paste(state_abb, namelsad, sep = " ")) |>
+  mutate(state_county = paste(state_abb, namelsad, sep = "")) |>
   select(county, state, countyfips, state_county)
 
 prison_boundaries_sf <- prison_boundaries_sf |>
@@ -276,7 +278,8 @@ prison_boundaries_sf <- prison_boundaries_sf |>
 county_heat_100 <- county_heat_100 |>
   clean_names() |>
   select(state = x1, county = x2, historical, no_action_5) |>
-  mutate(state_county = paste(state, county, sep = " "))
+  mutate(county = gsub("\\s", "", county)) |>
+  mutate(state_county = paste(state, county, sep = ""))
 
 county_heat_100_sf <- county_state_names_sf |>
   inner_join(county_heat_100, by = c("state_county")) |>
