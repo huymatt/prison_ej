@@ -1,4 +1,33 @@
+
+/* Set background and text color for the body */
+
 body {
+
   background-color: black;
+
   color: white;
+
+  /* Set a maximum width for the entire webpage */
+
+  max-width: 1500px; /* Adjust to desired max width */
+
+  margin: 0 auto;    /* Centers the content */
+
 }
+
+
+
+/* Set a maximum size for all images */
+
+img {
+
+  max-width: 1500px;  /* Adjust to desired max width for images */
+
+  max-height: 1500px; /* Adjust to desired max height for images */
+
+  width: 100%;       /* Ensures images scale within their container */
+
+  height: auto;      /* Maintains aspect ratio */
+
+}
+

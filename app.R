@@ -2,304 +2,340 @@
 ####### Matthieu Huy, March 2023 ####################
 
 
+############ New version, updated 9-17-2025 ####################################
+
+####### Prison Justice App ##########################
+####### Matthieu Huy, March 2023 ####################
+
+
 #Load packages
-
-
 library(shiny)
-library(raster)
 library(shinyWidgets)
 library(shinycssloaders)
 library(tidyverse)
 library(sf)
-library(janitor)
-library(terra)
-library(leaflet)
-library(leaflet.extras)
-library(geojsonio)
-library(rgdal)
-library(spatialEco)
-library(glue)
-library(here)
-library(stringr)
-library(ggtext)
-library(htmltools)
+library(terra) # Use terra for all raster operations
 library(tmap)
-library(usmap)
+library(here)
 library(shinythemes)
-library(rcartocolor)
-library(readxl)
 
-select <- dplyr::select ##dplyr::select() was clashing with another function
+select <- dplyr::select ## To handle namespace conflicts
 
-######################## Read in data ##########################################
+######################## Load Pre-processed Data #################################
 
-### State polygons from US Census Bureau
-### applied sf::st_simplify() function in separate Rscript to reduce resolution and file size
+# --- Load vector data from .rds files ---
+prison_boundaries_sf <- readRDS(here("data/preprocessed/prison_boundaries_sf.rds"))
+superfund_noprison_1_sf <- readRDS(here("data/preprocessed/superfund_noprison_1_sf.rds"))
+superfund_withprisons_1_sf <- readRDS(here("data/preprocessed/superfund_withprisons_1_sf.rds"))
+superfund_noprison_3_sf <- readRDS(here("data/preprocessed/superfund_noprison_3_sf.rds"))
+superfund_withprisons_3_sf <- readRDS(here("data/preprocessed/superfund_withprisons_3_sf.rds"))
+county_state_names_sf <- readRDS(here("data/preprocessed/county_state_names_sf.rds"))
+county_heat_100_sf <- readRDS(here("data/preprocessed/county_heat_100_sf.rds"))
 
-state_sf <- read_sf(here("data/state_county/states_simple.shp"))
-
-### County polygons from US Census Bureau
-### applied sf::st_simplify() function in separate Rscript to reduce resolution and file size
-county_sf <- read_sf(here("data/state_county/us_county_simple.shp"))
+# --- Load raster data from the GeoTIFF ---
+temp_raster_merge <- rast(here("data/preprocessed/final_temp_raster.tif"))
 
 
-### Superfund data
-#superfund_csv <- read_csv(here("data/superfund_data/superfund_data_updated.csv")) |>
-  #clean_names()
+############ Previous version, updated 9-17-2025 ###############################
 
-### convert superfund df to sf
-#superfund_sf <- st_as_sf(superfund_csv,
-                         #coords = c("longitude", "latitude"))
 
-#st_crs(county_sf) ### EPSG 4296
-#st_crs(superfund_sf) ### no crs
-
-### set crs for superfund_sf to same same county_sf
-#superfund_sf <- st_set_crs(superfund_sf, st_crs(county_sf))
-
-#st_crs(superfund_sf) ### EPSG 4296
-
-### superfund 1 mile and 3 mile buffers
-superfund_noprison_1_sf <- read_sf(here("data/superfund_data/sites_withprisons_1.shp")) |>
-  clean_names() |>
-  filter(join_count == "0")
-superfund_withprisons_1_sf <- read_sf(here("data/superfund_data/sites_withprisons_1.shp")) |>
-  clean_names() |>
-  filter(join_count == "1")
-
-superfund_noprison_3_sf <- read_sf(here("data/superfund_data/sites_withprisons_3.shp")) |>
-  clean_names() |>
-  filter(join_count == "0")
-superfund_withprisons_3_sf <- read_sf(here("data/superfund_data/sites_withprisons_3.shp")) |>
-  clean_names() |>
-  filter(join_count == "1")
-
-### prison locations from US Bureau of Prisons
-
-prison_boundaries_sf <- read_sf(here("data/Prison_Boundaries/Prison_Boundaries.shp")) |>
-  clean_names() |>
-  filter(type %in% c("COUNTY", "FEDERAL", "LOCAL", "STATE")) |>
-  mutate(type = as.factor(type))
-
-### convert all caps county names to match names in county_sf
-prison_boundaries_sf$county <- str_to_title(prison_boundaries_sf$county)
-
-### set crs for superfund buffers and prisons to same same county_sf
-superfund_withprisons_3_sf <- st_transform(superfund_withprisons_3_sf, st_crs(county_sf))
-superfund_withprisons_1_sf <- st_transform(superfund_withprisons_1_sf, st_crs(county_sf))
-prison_boundaries_sf <- st_transform(prison_boundaries_sf, st_crs(county_sf))
-
-### county heat data (current days above 100F from union of concerned scientists)
-county_heat_100 <- readxl::read_excel(here("data/killer-heat-data-by-county.xlsx"),
-                                      sheet = 3, skip = 2)
-
-######### temperature climate projection rasters
-
-### download all climate change models/scenarios suggested by EPA's LASSO Tool
-
-### temp rasters region 1 (ME, NH, VT, MA, RI, CT)
-
-temp_1a <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_CMCC-CMS_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_1b <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_GFDL-ESM2G_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_1c <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_HadGEM2-CC_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_1d <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_1e <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_MIROC-ESM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_1f <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-
-temp1_stack <- c(temp_1a, temp_1b, temp_1c, temp_1d, temp_1e, temp_1f) # Put all pr rasters in a stack
-temp1_raster_avg <- reduce(temp1_stack, mean) #avg all climate models to generate 1 "mean" raster layer
-temp1_raster_avg <- raster(temp1_raster_avg) ### convert to raster::raster layer
-
-### temp rasters region 2 (NY, NJ)
-
-temp_2a <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_CMCC-CMS_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2b <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_GFDL-ESM2M_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2c <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_GISS-E2-R_r2i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2d <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_HadGEM2-CC_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2e <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_inmcm4_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2f <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_MIROC-ESM_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2g <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_MIROC-ESM-CHEM_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_2h <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_MPI-ESM-MR_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-
-temp2_stack <- c(temp_2a, temp_2b, temp_2c, temp_2d, temp_2e, temp_2f, temp_2g, temp_2h)
-temp2_raster_avg <- app(temp2_stack, mean)
-temp2_raster_avg <- raster(temp2_raster_avg) ### convert to raster::raster layer
-
-### temp rasters region 3 (MA, MD, VA, WV, DC)
-
-temp_3a <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_GFDL-CM3_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3b <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_HadGEM2-CC_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3c <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_HadGEM2-ES_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3d <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_inmcm4_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3e <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_IPSL-CM5A-LR_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3f <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_MIROC-ESM_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3g <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_MPI-ESM-MR_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-temp_3h <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_MRI-CGCM3_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
-
-temp3_stack <- c(temp_3a, temp_3b, temp_3c, temp_3d, temp_3e, temp_3f, temp_3g, temp_3h)
-temp3_raster_avg <- app(temp3_stack, mean)
-temp3_raster_avg <- raster(temp3_raster_avg) ### convert to raster::raster layer
-
-### temp rasters region 4 (KY, TN, NC, SC, MS, AL, GA, FL)
-
-temp_4a <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_FGOALS-g2_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_4b <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_4c <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_HadGEM2-CC_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_4d <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_HadGEM2-ES_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_4e <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_4f <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_MPI-ESM-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_4g <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-
-temp4_stack <- c(temp_4a, temp_4b, temp_4c, temp_4d, temp_4e, temp_4f, temp_4g)
-temp4_raster_avg <- app(temp4_stack, mean)
-temp4_raster_avg <- raster(temp4_raster_avg) ### convert to raster::raster layer
-
-### temp rasters region 5 (MI, OH, IN, IL, WI, MN)
-
-temp_5a <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_ACCESS1-0_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5b <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_CMCC-CMS_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5c <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5d <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_GFDL-ESM2M_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5e <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_GISS-E2-R_r2i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5f <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5g <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_IPSL-CM5A-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5h <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_MIROC-ESM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5i <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_5j <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-
-temp5_stack <- c(temp_5a, temp_5b, temp_5c, temp_5d, temp_5e, temp_5f, temp_5g, temp_5h, temp_5i, temp_5j)
-temp5_raster_avg <- app(temp5_stack, mean)
-temp5_raster_avg <- raster(temp5_raster_avg) ### convert to raster::raster layer
-
-### temp rasters region 6 (AR, LA, NM, OK, TX)
-
-temp_6a <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_ACCESS1-3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_6b <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_HadGEM2-ES_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_6c <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_6d <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_IPSL-CM5A-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_6e <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-
-temp6_stack <- c(temp_6a, temp_6b, temp_6c, temp_6d, temp_6e)
-temp6_raster_avg <- app(temp6_stack, mean)
-temp6_raster_avg <- raster(temp6_raster_avg) ### convert to raster::raster layer
-
-### temp rasters region 7 (NE, IA, KS, MO)
-
-temp_7a <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_ACCESS1-0_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7b <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_EC-EARTH_r2i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7c <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7d <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_HadGEM2-ES_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7e <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7f <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7g <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7h <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_GFDL-ESM2M_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_7i <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_IPSL-CM5A-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-
-temp7_stack <- c(temp_7a, temp_7b, temp_7c, temp_7d, temp_7e, temp_7f, temp_7g, temp_7h, temp_7i)
-temp7_raster_avg <- app(temp7_stack, mean)
-temp7_raster_avg <- raster(temp7_raster_avg) ### convert to raster::raster layer
-
-### temp rasters region 8 (UT, CO, WY, SD, ND, MT)
-
-temp_8a <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_ACCESS1-0_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_8b <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_EC-EARTH_r2i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_8c <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_8d <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_HadGEM2-AO_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_8e <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_8f <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_8g <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-
-temp8_stack <- c(temp_8a, temp_8b, temp_8c, temp_8d, temp_8e, temp_8f, temp_8g)
-temp8_raster_avg <- app(temp8_stack, mean)
-temp8_raster_avg <- raster(temp8_raster_avg) ### convert to raster::raster layer
-
-### temp rasters region 9 (CA, NV, AZ)
-
-temp_9a <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_CanESM2_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_9b <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_9c <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MIROC-ESM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_9d <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_9e <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MIROC5_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_9f <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-
-temp9_stack <- c(temp_9a, temp_9b, temp_9c, temp_9d, temp_9e, temp_9f)
-temp9_raster_avg <- app(temp9_stack, mean)
-temp9_raster_avg <- raster(temp9_raster_avg) ### convert to raster::raster layer
-
-### temp rasters region 10 (WA, OR, ID)
-
-temp_10a <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_CanESM2_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_10b <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_CMCC-CM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_10c <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_CMCC-CMS_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_10d <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_HadGEM2-AO_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_10e <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_HadGEM2-AO_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_10f <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-temp_10g <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
-
-temp10_stack <- c(temp_10a, temp_10b, temp_10c, temp_10d, temp_10e, temp_10f, temp_10g)
-temp10_raster_avg <- app(temp10_stack, mean)
-temp10_raster_avg <- raster(temp10_raster_avg) ### convert to raster::raster layer
-
-temp_raster_merge <- merge(temp1_raster_avg, temp2_raster_avg, temp3_raster_avg, temp4_raster_avg, temp5_raster_avg,
-                           temp6_raster_avg, temp7_raster_avg, temp8_raster_avg, temp9_raster_avg, temp10_raster_avg)
-
-temp_raster_merge <- projectRaster(temp_raster_merge, crs = crs(county_sf))
-
-### project() command didn't work well with SpatRaster object from 'terra' package, this achieves the same thing
-#temp_raster_merge <- project(temp_raster_merge, crs = crs(county_sf))
-
-### clean/prep data #########################################
-
-state_names <- state_sf |>
-  as.data.frame() |>
-  select(statefp, state = name, state_abb = stusps)
-
-county_state_names_df <- county_sf |>
-  as.data.frame() |>
-  select(statefp, countyfp, county = name, namelsad) |>
-  mutate(namelsad = gsub("\\s", "", namelsad)) |>
-  inner_join(state_names, by = c("statefp")) |>
-  mutate(countyfips = paste(statefp, countyfp, sep = "")) |>
-  mutate(state_county = paste(state_abb, namelsad, sep = "")) |>
-  select(county, state, countyfips, state_county)
-
-county_state_names_sf <- county_sf |>
-  select(statefp, countyfp, county = name, namelsad) |>
-  mutate(namelsad = gsub("\\s", "", namelsad)) |>
-  inner_join(state_names, by = c("statefp")) |>
-  mutate(countyfips = paste(statefp, countyfp, sep = "")) |>
-  mutate(state_county = paste(state_abb, namelsad, sep = "")) |>
-  select(county, state, countyfips, state_county)
-
-prison_boundaries_sf <- prison_boundaries_sf |>
-  select(-c("state", "county")) |>
-  inner_join(county_state_names_df, by = c("countyfips"))
-
-county_heat_100 <- county_heat_100 |>
-  clean_names() |>
-  select(state = x1, county = x2, historical, no_action_5) |>
-  mutate(county = gsub("\\s", "", county)) |>
-  mutate(state_county = paste(state, county, sep = ""))
-
-county_heat_100_sf <- county_state_names_sf |>
-  inner_join(county_heat_100, by = c("state_county")) |>
-  select(county = county.x, state = state.x, historical, projected = no_action_5)
-  #filter(state %in% c("California", "Arizona", "Nevada", "New Mexico", "Texas",
-                     # "Oklahoma", "Louisiana", "Arkansas")) ### same states included in raster
-
+#Load packages
+#
+# library(shiny)
+# library(raster)
+# library(shinyWidgets)
+# library(shinycssloaders)
+# library(tidyverse)
+# library(sf)
+# library(janitor)
+# library(terra)
+# library(leaflet)
+# library(leaflet.extras)
+# library(geojsonio)
+# library(rgdal)
+# library(spatialEco)
+# library(glue)
+# library(here)
+# library(stringr)
+# library(ggtext)
+# library(htmltools)
+# library(tmap)
+# library(usmap)
+# library(shinythemes)
+# library(rcartocolor)
+# library(readxl)
+# library(rsconnect)
+#
+# select <- dplyr::select ##dplyr::select() was clashing with another function
+#
+# ######################## Read in data ##########################################
+#
+# ### State polygons from US Census Bureau
+# ### applied sf::st_simplify() function in separate Rscript to reduce resolution and file size
+#
+# state_sf <- read_sf(here("data/state_county/states_simple.shp"))
+#
+# ### County polygons from US Census Bureau
+# ### applied sf::st_simplify() function in separate Rscript to reduce resolution and file size
+# county_sf <- read_sf(here("data/state_county/us_county_simple.shp"))
+#
+#
+# ### Superfund data
+# #superfund_csv <- read_csv(here("data/superfund_data/superfund_data_updated.csv")) |>
+#   #clean_names()
+#
+# ### convert superfund df to sf
+# #superfund_sf <- st_as_sf(superfund_csv,
+#                          #coords = c("longitude", "latitude"))
+#
+# #st_crs(county_sf) ### EPSG 4296
+# #st_crs(superfund_sf) ### no crs
+#
+# ### set crs for superfund_sf to same same county_sf
+# #superfund_sf <- st_set_crs(superfund_sf, st_crs(county_sf))
+#
+# #st_crs(superfund_sf) ### EPSG 4296
+#
+# ### superfund 1 mile and 3 mile buffers
+# superfund_noprison_1_sf <- read_sf(here("data/superfund_data/sites_withprisons_1.shp")) |>
+#   clean_names() |>
+#   filter(join_count == "0")
+# superfund_withprisons_1_sf <- read_sf(here("data/superfund_data/sites_withprisons_1.shp")) |>
+#   clean_names() |>
+#   filter(join_count == "1")
+#
+# superfund_noprison_3_sf <- read_sf(here("data/superfund_data/sites_withprisons_3.shp")) |>
+#   clean_names() |>
+#   filter(join_count == "0")
+# superfund_withprisons_3_sf <- read_sf(here("data/superfund_data/sites_withprisons_3.shp")) |>
+#   clean_names() |>
+#   filter(join_count == "1")
+#
+# ### prison locations from US Bureau of Prisons
+#
+# prison_boundaries_sf <- read_sf(here("data/Prison_Boundaries/Prison_Boundaries.shp")) |>
+#   clean_names() |>
+#   filter(type %in% c("COUNTY", "FEDERAL", "LOCAL", "STATE")) |>
+#   mutate(type = as.factor(type))
+#
+# ### convert all caps county names to match names in county_sf
+# prison_boundaries_sf$county <- str_to_title(prison_boundaries_sf$county)
+#
+# ### set crs for superfund buffers and prisons to same same county_sf
+# superfund_withprisons_3_sf <- st_transform(superfund_withprisons_3_sf, st_crs(county_sf))
+# superfund_withprisons_1_sf <- st_transform(superfund_withprisons_1_sf, st_crs(county_sf))
+# prison_boundaries_sf <- st_transform(prison_boundaries_sf, st_crs(county_sf))
+#
+# ### county heat data (current days above 100F from union of concerned scientists)
+# county_heat_100 <- readxl::read_excel(here("data/killer-heat-data-by-county.xlsx"),
+#                                       sheet = 3, skip = 2)
+#
+# ######### temperature climate projection rasters
+#
+# ### download all climate change models/scenarios suggested by EPA's LASSO Tool
+#
+# ### temp rasters region 1 (ME, NH, VT, MA, RI, CT)
+#
+# temp_1a <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_CMCC-CMS_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_1b <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_GFDL-ESM2G_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_1c <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_HadGEM2-CC_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_1d <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_1e <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_MIROC-ESM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_1f <- rast(here("rasters/climate_scenarios/lasso_data_1/LOCA_rcp85_eparegion1_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+#
+# temp1_stack <- c(temp_1a, temp_1b, temp_1c, temp_1d, temp_1e, temp_1f) # Put all pr rasters in a stack
+# temp1_raster_avg <- reduce(temp1_stack, mean) #avg all climate models to generate 1 "mean" raster layer
+# temp1_raster_avg <- raster(temp1_raster_avg) ### convert to raster::raster layer
+#
+# ### temp rasters region 2 (NY, NJ)
+#
+# temp_2a <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_CMCC-CMS_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_2b <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_GFDL-ESM2M_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_2c <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_GISS-E2-R_r2i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_2d <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_HadGEM2-CC_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_2e <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_inmcm4_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_2f <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_MIROC-ESM_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_2g <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_MIROC-ESM-CHEM_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_2h <- rast(here("rasters/climate_scenarios/lasso_data_2/LOCA_rcp85_eparegion2_MPI-ESM-MR_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+#
+# temp2_stack <- c(temp_2a, temp_2b, temp_2c, temp_2d, temp_2e, temp_2f, temp_2g, temp_2h)
+# temp2_raster_avg <- app(temp2_stack, mean)
+# temp2_raster_avg <- raster(temp2_raster_avg) ### convert to raster::raster layer
+#
+# ### temp rasters region 3 (MA, MD, VA, WV, DC)
+#
+# temp_3a <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_GFDL-CM3_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_3b <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_HadGEM2-CC_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_3c <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_HadGEM2-ES_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_3d <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_inmcm4_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_3e <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_IPSL-CM5A-LR_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_3f <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_MIROC-ESM_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_3g <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_MPI-ESM-MR_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+# temp_3h <- rast(here("rasters/climate_scenarios/lasso_data_3/LOCA_rcp85_eparegion3_MRI-CGCM3_r1i1p1_pr_pctchg_2041_2070_1981_2010_Annual.tif"))
+#
+# temp3_stack <- c(temp_3a, temp_3b, temp_3c, temp_3d, temp_3e, temp_3f, temp_3g, temp_3h)
+# temp3_raster_avg <- app(temp3_stack, mean)
+# temp3_raster_avg <- raster(temp3_raster_avg) ### convert to raster::raster layer
+#
+# ### temp rasters region 4 (KY, TN, NC, SC, MS, AL, GA, FL)
+#
+# temp_4a <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_FGOALS-g2_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_4b <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_4c <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_HadGEM2-CC_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_4d <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_HadGEM2-ES_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_4e <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_4f <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_MPI-ESM-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_4g <- rast(here("rasters/climate_scenarios/lasso_data_4/LOCA_rcp85_eparegion4_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+#
+# temp4_stack <- c(temp_4a, temp_4b, temp_4c, temp_4d, temp_4e, temp_4f, temp_4g)
+# temp4_raster_avg <- app(temp4_stack, mean)
+# temp4_raster_avg <- raster(temp4_raster_avg) ### convert to raster::raster layer
+#
+# ### temp rasters region 5 (MI, OH, IN, IL, WI, MN)
+#
+# temp_5a <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_ACCESS1-0_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_5b <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_CMCC-CMS_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_5c <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_5d <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_GFDL-ESM2M_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_5e <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_GISS-E2-R_r2i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_5f <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_5g <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_IPSL-CM5A-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_5h <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_MIROC-ESM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_5i <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_5j <- rast(here("rasters/climate_scenarios/lasso_data_5/LOCA_rcp85_eparegion5_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+#
+# temp5_stack <- c(temp_5a, temp_5b, temp_5c, temp_5d, temp_5e, temp_5f, temp_5g, temp_5h, temp_5i, temp_5j)
+# temp5_raster_avg <- app(temp5_stack, mean)
+# temp5_raster_avg <- raster(temp5_raster_avg) ### convert to raster::raster layer
+#
+# ### temp rasters region 6 (AR, LA, NM, OK, TX)
+#
+# temp_6a <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_ACCESS1-3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_6b <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_HadGEM2-ES_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_6c <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_6d <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_IPSL-CM5A-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_6e <- rast(here("rasters/climate_scenarios/lasso_data_6/LOCA_rcp85_eparegion6_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+#
+# temp6_stack <- c(temp_6a, temp_6b, temp_6c, temp_6d, temp_6e)
+# temp6_raster_avg <- app(temp6_stack, mean)
+# temp6_raster_avg <- raster(temp6_raster_avg) ### convert to raster::raster layer
+#
+# ### temp rasters region 7 (NE, IA, KS, MO)
+#
+# temp_7a <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_ACCESS1-0_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_7b <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_EC-EARTH_r2i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_7c <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_7d <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_HadGEM2-ES_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_7e <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_7f <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_7g <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_7h <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_GFDL-ESM2M_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_7i <- rast(here("rasters/climate_scenarios/lasso_data_7/LOCA_rcp85_eparegion7_IPSL-CM5A-MR_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+#
+# temp7_stack <- c(temp_7a, temp_7b, temp_7c, temp_7d, temp_7e, temp_7f, temp_7g, temp_7h, temp_7i)
+# temp7_raster_avg <- app(temp7_stack, mean)
+# temp7_raster_avg <- raster(temp7_raster_avg) ### convert to raster::raster layer
+#
+# ### temp rasters region 8 (UT, CO, WY, SD, ND, MT)
+#
+# temp_8a <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_ACCESS1-0_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_8b <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_EC-EARTH_r2i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_8c <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_GFDL-CM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_8d <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_HadGEM2-AO_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_8e <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_8f <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_8g <- rast(here("rasters/climate_scenarios/lasso_data_8/LOCA_rcp85_eparegion8_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+#
+# temp8_stack <- c(temp_8a, temp_8b, temp_8c, temp_8d, temp_8e, temp_8f, temp_8g)
+# temp8_raster_avg <- app(temp8_stack, mean)
+# temp8_raster_avg <- raster(temp8_raster_avg) ### convert to raster::raster layer
+#
+# ### temp rasters region 9 (CA, NV, AZ)
+#
+# temp_9a <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_CanESM2_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_9b <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_inmcm4_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_9c <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MIROC-ESM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_9d <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_9e <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MIROC5_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_9f <- rast(here("rasters/climate_scenarios/lasso_data_9/LOCA_rcp85_eparegion9_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+#
+# temp9_stack <- c(temp_9a, temp_9b, temp_9c, temp_9d, temp_9e, temp_9f)
+# temp9_raster_avg <- app(temp9_stack, mean)
+# temp9_raster_avg <- raster(temp9_raster_avg) ### convert to raster::raster layer
+#
+# ### temp rasters region 10 (WA, OR, ID)
+#
+# temp_10a <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_CanESM2_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_10b <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_CMCC-CM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_10c <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_CMCC-CMS_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_10d <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_HadGEM2-AO_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_10e <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_HadGEM2-AO_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_10f <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_MIROC-ESM-CHEM_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+# temp_10g <- rast(here("rasters/climate_scenarios/lasso_data_10/LOCA_rcp85_eparegion10_MRI-CGCM3_r1i1p1_tas_F_2041_2070_1981_2010_Annual.tif"))
+#
+# temp10_stack <- c(temp_10a, temp_10b, temp_10c, temp_10d, temp_10e, temp_10f, temp_10g)
+# temp10_raster_avg <- app(temp10_stack, mean)
+# temp10_raster_avg <- raster(temp10_raster_avg) ### convert to raster::raster layer
+#
+# temp_raster_merge <- merge(temp1_raster_avg, temp2_raster_avg, temp3_raster_avg, temp4_raster_avg, temp5_raster_avg,
+#                            temp6_raster_avg, temp7_raster_avg, temp8_raster_avg, temp9_raster_avg, temp10_raster_avg)
+#
+# temp_raster_merge <- projectRaster(temp_raster_merge, crs = crs(county_sf))
+#
+# ### project() command didn't work well with SpatRaster object from 'terra' package, this achieves the same thing
+# #temp_raster_merge <- project(temp_raster_merge, crs = crs(county_sf))
+#
+# ### clean/prep data #########################################
+#
+# state_names <- state_sf |>
+#   as.data.frame() |>
+#   select(statefp, state = name, state_abb = stusps)
+#
+# county_state_names_df <- county_sf |>
+#   as.data.frame() |>
+#   select(statefp, countyfp, county = name, namelsad) |>
+#   mutate(namelsad = gsub("\\s", "", namelsad)) |>
+#   inner_join(state_names, by = c("statefp")) |>
+#   mutate(countyfips = paste(statefp, countyfp, sep = "")) |>
+#   mutate(state_county = paste(state_abb, namelsad, sep = "")) |>
+#   select(county, state, countyfips, state_county)
+#
+# county_state_names_sf <- county_sf |>
+#   select(statefp, countyfp, county = name, namelsad) |>
+#   mutate(namelsad = gsub("\\s", "", namelsad)) |>
+#   inner_join(state_names, by = c("statefp")) |>
+#   mutate(countyfips = paste(statefp, countyfp, sep = "")) |>
+#   mutate(state_county = paste(state_abb, namelsad, sep = "")) |>
+#   select(county, state, countyfips, state_county)
+#
+# prison_boundaries_sf <- prison_boundaries_sf |>
+#   select(-c("state", "county")) |>
+#   inner_join(county_state_names_df, by = c("countyfips"))
+#
+# county_heat_100 <- county_heat_100 |>
+#   clean_names() |>
+#   select(state = x1, county = x2, historical, no_action_5) |>
+#   mutate(county = gsub("\\s", "", county)) |>
+#   mutate(state_county = paste(state, county, sep = ""))
+#
+# county_heat_100_sf <- county_state_names_sf |>
+#   inner_join(county_heat_100, by = c("state_county")) |>
+#   select(county = county.x, state = state.x, historical, projected = no_action_5)
+#   #filter(state %in% c("California", "Arizona", "Nevada", "New Mexico", "Texas",
+#                      # "Oklahoma", "Louisiana", "Arkansas")) ### same states included in raster
+#
 
 ### UI ##########################################
 ui <- shiny::navbarPage(theme = "shiny_theme.css",
   title = tags$div(
-    "Intentional
-    Indifference"),
+    "HEAT MAP"),
     tags$head(
     tags$link(
       rel = "stylesheet", type = "text/css",
       href = "shiny_theme.css")
     ),
     tabPanel("Home",
-             img(src = "prison_logo3.png", height = "100%", width = "100%%"),
+             img(src = "prison_logo3.png"),
 
              tags$div(
                h3(strong("Background")),
@@ -334,22 +370,21 @@ ui <- shiny::navbarPage(theme = "shiny_theme.css",
                  or have loved ones that are or were housed within these facilities. This is a layered and challenging topic.
                  Please know that we are with you on this journey. If you are open to sharing, we welcome your feedback to improve this project."),
                br(),
-               p("You may contact us at matthieu.huy@gmail.com or ebaker00@bren.ucsb.edu."),
+               p("You may contact us at matthieu.p.huy@gmail.com or ebaker00@bren.ucsb.edu."),
             style = "padding: 20px 100px 40px 20px"),
 
 tags$footer(
-  h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
+  h6(strong("HEAT MAP: An Interactive Look at the Exposure of
             U.S. Carceral Facilities to Environmental Hazards")),
   h6(em("Created by Matthieu Huy. In partnership with Elijah Baker, and guidance from Dr. Summer Gray and Dr. David Pellow")),
   br(),
   style =
     "float:      center;
                 text-align: left;
-                bottom:     40px;
                 width:      100%;
                 height:     10px;
                 color:      gray;
-                padding:    30px 100px 40px 20px;
+                padding:    30px 100px 100px 20px;
                 z-index:    1;"
   )
 ), ### End Home
@@ -432,14 +467,13 @@ style = "padding: 20px 100px 40px 20px"
          ), #end mainPanel
 
 tags$footer(
-  h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
+  h6(strong("HEAT MAP: An Interactive Look at the Exposure of
             U.S. Carceral Facilities to Environmental Hazards")),
   h6(em("Created by Matthieu Huy. In partnership with Elijah Baker, and guidance from Dr. Summer Gray and Dr. David Pellow")),
   br(),
         style =
           "float:      center;
                 text-align: left;
-                bottom:     40px;
                 width:      100%;
                 height:     10px;
                 color:      gray;
@@ -452,6 +486,8 @@ tags$footer(
 ##### Heat Maps Page #################################
 
 tabPanel("Heat Risk",
+
+         tags$div(style = "padding-bottom: 60px;",
 
          tags$div(
            br(),
@@ -497,7 +533,7 @@ tabPanel("Heat Risk",
            br(),
 
            tags$div(
-             h3("Mapping Carceral Facilities' Exposure Heat",
+             h3("Mapping Carceral Facilities' Exposure to Heat",
                 style = "font-weight: bold")),
            style = "padding: 20px 100px 40px 20px"
          ),
@@ -559,21 +595,22 @@ tabPanel("Heat Risk",
          ), #end mainPanel
 
          tags$footer(
-           h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
+           h6(strong("HEAT MAP: An Interactive Look at the Exposure of
             U.S. Carceral Facilities to Environmental Hazards")),
            h6(em("Created by Matthieu Huy. In partnership with Elijah Baker, and guidance from Dr. Summer Gray and Dr. David Pellow")),
            br(),
-        style =
-          "float:      center;
+           style =
+             "float:      center;
                 text-align: left;
-                bottom:     40px;
                 width:      100%;
                 height:     10px;
                 color:      gray;
-                padding:    30px 100px 40px 20px;
+                padding:    30px 100px 100px 20px;
                 z-index:    1;"
-         ) #end footer
+         )#end footer
+         ) # end tags$div added padding
 ), #end Heat Risk
+
 
 ##### Case Study #################################
 
@@ -590,7 +627,7 @@ tabPanel("Case Study",
 
            h3(strong("The Northwest Detention Center, Tacoma Washington")),
            br(),
-           img(src = "northwest_2.jpg", height = "100%", width = "100%%"),
+           img(src = "northwest_2.jpg"),
            br(),
            br(),
            br(),
@@ -612,8 +649,9 @@ tabPanel("Case Study",
               style =
                 "float:      center;
                 text-align: center;"),
-           p("-Sara Wood, Northeast Tacoma Resident, expressing concerns during a public comment period discussing future industrial
-            projects at the site (City of Tacoma 2017)",
+           p("-Sara Wood, Northeast Tacoma Resident, expressing concerns during",
+             a('a public comment period for the City of Tacoma in 2017', href = 'https://cms.cityoftacoma.org/Planning/Tideflats/InterimRegulations/Tideflats%20Written%20Comments%20(thru%209-14-17).pdf'),
+             "discussing future industrial projects at the site",
             style =
               "float:      center;
                 text-align: center;
@@ -622,25 +660,28 @@ tabPanel("Case Study",
                 color:      gray;
                 padding:    0px 0px 40px 20px;
                 z-index:    1;"),
-           img(src = "tacoma_superfund_epa_v2.png", height = "100%", width = "100%"),
+           img(src = "tacoma_superfund_epa_v2.png"),
            br(),
            br(),
            p("(Left) the Commencement Bay Tideflats Superfund Site and NWDC as shown in the interactive mapping tool.
              (Right) The Commencement Bay Tideflats Superfund Site as mapped by the USEPA in 2022. A white polygon showing the location of the NWDC has been added. The Green area
-             labelled OU3 shows the Tacoma Tar Pits. Referencing the tar pits in their 2022 report, the EPA states they continue to work with
-             responsible parties to monitor the clean up of sight and “may conduct an optimization study in the next couple
-             of years“ (USEPA 2022).",
+             labelled OU3 shows the Tacoma Tar Pits.",
+             a('Referencing the tar pits in their 2022 report', href = 'https://semspub.epa.gov/work/10/100400472.pdf'),
+             "the EPA states they continue to work with responsible parties to monitor the clean up of sight and “may conduct an optimization study in the next couple
+             of years“",
              style = "color:      gray;"),
            br(),
            br(),
            p("For thirty years, a coal-gasification plant leeched coal-tar wastes into the soil and groundwater of
              the Tacoma Tideflats. The area, which became known as the Tacoma Tar Pits, was included in the Commencement
-             Bay Tideflats Superfund site (ID: WAD980726368) when the EPA designated it as a high priority toxic site in
-             1983 due to high levels of volatile organic compounds and heavy metals in the groundwater and soil (U.S. Congress).
-             The USEPA superfund contaminant list shows this area to be polluted with 27 different compounds, including antimony,
+             Bay Tideflats Superfund site (ID: WAD980726368)",
+             a('when the EPA designated it as a high priority toxic site in 1983', href = 'https://www.princeton.edu/~ota/disk2/1988/8803/880301.PDF'),
+             "due to high levels of volatile organic compounds and heavy metals in the groundwater and soil.",
+             a('The USEPA superfund contaminant list', href = 'https://cumulis.epa.gov/supercpad/SiteProfiles/index.cfm?fuseaction=second.contams&id=1000981'),
+             "shows this area to be polluted with 27 different compounds, including antimony,
              arsenic, benzene, beryllium, cadmium, chromium VI, copper, lead, manganese, mercury, nickel, polychlorinated biphenyls,
              polycyclic aromatic hydrocarbons, selenium, silver, tetrachloroethylene, thallium, and zinc. These toxic compounds are
-             found in soil, sediment, surface water, groundwater, and in the air on site (USEPA 2023). The quote above supports
+             found in soil, sediment, surface water, groundwater, and in the air on site. The quote above supports
              that these chemicals and toxic compounds are present in the air coming from this site. Being that residents of northeast Tacoma are not even
              living on the premises, it is likely that immigrant detainees at the Northwest Detention Center are suffering to a much
              greater degree"),
@@ -652,8 +693,9 @@ tabPanel("Case Study",
          br(),
          p(strong("Through breathing contaminated air, skin exposure, and water supplies, immigrants incarcerated at the NWDC can ingest the
              toxins present in the area which can lead to skin irritation, respiratory infections, developmental difficulties, cancers,
-             organ failure, and early death (Pellow and Varzin 2019)."), "It is important to note that health problems caused by the environmental
-             hazards at the NWDC are difficult to track and identify because detainees are constantly being deported or moved and are hard to
+             organ failure, and early death,", a('according to studies', href = 'https://www.researchgate.net/publication/334607330_The_Intersection_of_Race_Immigration_Status_and_Environmental_Justice')),
+             "It is important to note that health problems caused by the environmental hazards at the NWDC are difficult to track and identify
+             because detainees are constantly being deported or moved and are hard to
              track after they leave the facility. However, it is clear that this area should never be used to house human beings."),
          br(),
          ), #end Health tab
@@ -666,7 +708,8 @@ tabPanel("Case Study",
             style =
               "float:      center;
                 text-align: center;"),
-         p("-Reported by the Tacoma News Tribune, this shows that emergency evacuation scenarios like those described above are not merely theoretical (Kamb 2012).",
+         p(a("-Reported by the Tacoma News Tribune", href = 'https://www.thenewstribune.com/news/special-reports/article25860412.html'),
+           ", this shows that emergency evacuation scenarios like those described above are not merely theoretical",
            style =
              "float:      center;
                 text-align: center;
@@ -676,25 +719,29 @@ tabPanel("Case Study",
                 padding:    0px 0px 40px 20px;
                 z-index:    1;"),
          p("The NWDC is built on a low-lying floodplain where soils are expected to liquify or shift dramatically during an earthquake, and
-             the area would be completely wiped out in the event of a tsunami hitting the Puget Sound  (Pellow and Varzin 2019). Additionally,
-             if nearby Mt. Rainier erupts, studies have shown that the area lies directly in the path of the volcanic mudslides that would follow (USGS 2016).
-             The GEO group would have extremely limited time to evacuate almost 1500 detainees if any of these disasters occured, and yet has never released
-             their emergency plans to the public (Pellow and Varzin 2019). They have reportedly ignored agreements and refused requests to provide local news
-             outlets and city officials with copies of such plans when prompted to do so (Kamb 2012)."),
+             the area would be completely wiped out in the event of a tsunami hitting the Puget Sound,",
+           a('according to the US Geological Survey', href = 'https://www.researchgate.net/publication/334607330_The_Intersection_of_Race_Immigration_Status_and_Environmental_Justice'),
+           "Additionally, if nearby Mt. Rainier erupts, studies have shown that",
+           a('the area lies directly in the path of the volcanic mudslides that would follow.', href = 'https://www.usgs.gov/media/images/mt-rainier-lahar-hazard-map'),
+             "The GEO group would have extremely limited time to evacuate almost 1500 detainees if any of these disasters occured, and yet has never released
+             their emergency plans to the public. They have reportedly ignored agreements",
+           a('and refused requests to provide local news outlets and city officials with copies of such plans', href = 'https://www.thenewstribune.com/news/special-reports/article25860412.html'),
+           "when prompted to do so."),
          br(),
          br(),
          ), # end Natural Disasters
          tabPanel("The Problematic Siting Process",
          h3(strong("The Problematic Siting Process of the Northwest Detention Center")),
          br(),
-         p("Federal reports initially recommended the facility be built on a different site near the commercial port of Tacoma. A draft of the federal
-           environmental impact statement in 2001 initially deemed the site where the NWDC ended up being built to be unfit because it contained excessive
-           hazardous waste and was located adjacent to the Tacoma Tar Pits, posing “an unidentified risk” and “liability concerns” for the federal government (Kamb 2012).
-           However, after pushback from port officials and local politicians, the initial recommendation was changed to express no preference between the two potential
-           sites (Kamb 2012)."),
+         p(a("Federal reports initially recommended the facility be built on a different site", href = 'https://www.thenewstribune.com/news/special-reports/article25860412.html'),
+           "near the commercial port of Tacoma. A draft of the federal environmental impact statement in 2001 initially deemed the site where the NWDC ended up being built
+           to be unfit because it contained excessive hazardous waste and was located adjacent to the Tacoma Tar Pits, posing “an unidentified risk” and “liability concerns”
+           for the federal government. However, after pushback from port officials and local politicians, the initial recommendation was changed to express no preference between the two potential
+           sites."),
          br(),
-         p(strong("“If we had to have it in Tacoma,” said Tacoma City Councilman Kevin Phelps during a 2012 interview, “I’d rather help try to encourage where it went, and
-                  we didn’t want it on prime port property… Tacoma will make every possible effort to keep the INS from constructing a facility on this site” (Kamb 2012).")),
+         p(strong("“If we had to have it in Tacoma,” said Tacoma City Councilman Kevin Phelps",
+                  a('during a 2012 interview', href = 'https://www.thenewstribune.com/news/special-reports/article25860412.html'),
+                  "“I’d rather help try to encourage where it went, and we didn’t want it on prime port property… Tacoma will make every possible effort to keep the INS from constructing a facility on this site.”")),
          br(),
          p("In December of 2001, the project was approved for construction at the site adjacent to the Tacoma Tar pits. The nearby Seattle Detention Center had reached maximum
            capacity by 1999, and this decision came at a time where there had been a significant increase in immigration to the U.S. and soon after the terrorist attacks of
@@ -716,25 +763,45 @@ tabPanel("Case Study",
          br(),
          br(),
          p("Prisoners have organized hunger strikes and other forms of resistance within the facility, including in 2014, 2017, and 2023 to protest their living conditions,
-           citing concerns about abuse, food quality, and inadequate medical care, among other issues (Pellow and Vazin 2019). During a recent act of resistance in February of 2023,
-           the grassroots group La Resistencia, which advocates “for the closing of the facility and an end to all detentions and deportations,” alleged in a news release Feb. 6
+           citing concerns about abuse, food quality, and inadequate medical care,",
+           a('among other issues.', href = 'https://www.researchgate.net/publication/334607330_The_Intersection_of_Race_Immigration_Status_and_Environmental_Justice'),
+           "During a recent act of resistance in February of 2023, the grassroots group La Resistencia, which advocates “for the closing of the facility and an end to all detentions and deportations,” alleged in a news release Feb. 6
            that “tear gas” was used to control detainees after they asked another unit “to join in a protest against worsening conditions,” spreading beyond the intended target and
            reaching other parts of the facility. When prompted by local news outlets, ICE and the GEO group justified their actions and refused to share any written or video documentation
-           related to the incident or the treatment of detainees exposed to chemicals, documentation that is required in federal standards about the use of force (Krell 2023). From outside
-           the prison, organizations such as the Northwest Immigrant Rights Project, La Resistencia, and the Northwest Detention Center Resistance Coalition have fought to expose and
+           related to the incident or the treatment of detainees exposed to chemicals, documentation that is required in federal standards",
+           a('about the use of force.', href = 'https://mcclatchy.us.auth0.com/login?state=hKFo2SBwSnNGUE9iUG9PdnBZMTdxMDB0Mlk4NjM1WElZejlmaaFupWxvZ2luo3RpZNkgVXhWamk0bE42MWZQU0RPVlpfa1VNdHpaWEhGUjloLU6jY2lk2SBCOEdNaVhJQlRDTkVPZjhDcGkwb2pqTWpyTkZMRTNGNA&client=B8GMiXIBTCNEOf8Cpi0ojjMjrNFLE3F4&protocol=oauth2&redirect_uri=https%3A%2F%2Fwww.thenewstribune.com%2Fozlo-inbys%2Flogin.html&response_type=code&scope=openid%20email%20profile%20offline_access%20update%3Aprofile%20complete%3Apurchase&code_challenge=sWnTJbUY-18fakJe86UrF7EDghKT9e-ekWZDCTF0ACg&code_challenge_method=S256&response_mode=query&audience=https%3A%2F%2Fapi.consumer.pt.mcclatchy.com'),
+           "From outside the prison, organizations such as the Northwest Immigrant Rights Project, La Resistencia, and the Northwest Detention Center Resistance Coalition have fought to expose and
            improve conditions for detainees, provided them with legal resources, and staged protests."),
          br(),
          p("While the Northwest Detention Center continues to operate, these resistance efforts within and outside of the facility have led to much greater media attention on the living
-           conditions at the center. Several lawsuits have been filed and new state legislation has been proposed to provide greater protections for detainees (Pellow and Varzin 2019).
-           In 2023, the state of Washington passed a bill to create stronger health and safety protections for people detained in private prisons with the goal of bringing more state
-           oversight into the Northwest Detention Center. However, the GEO group denied access to Washington state health and workplace inspectors twice in 2023 and is suing the state
-           over the bill, arguing the policy is unconstitutional because it interferes with federal immigration enforcement (Deng 2024)."),
+           conditions at the center.",
+           a('Several lawsuits have been filed and new state legislation has been proposed', href = 'https://www.researchgate.net/publication/334607330_The_Intersection_of_Race_Immigration_Status_and_Environmental_Justice'),
+           "to provide greater protections for detainees. In 2023, the state of Washington passed a bill to create stronger health and safety protections for people detained in private prisons with the goal of bringing more state
+           oversight into the Northwest Detention Center. However,",
+           a('the GEO group denied access to Washington state health and workplace inspectors twice in 2023', href = 'https://washingtonstatestandard.com/2024/01/24/state-inspectors-denied-entry-to-privately-run-immigration-detention-center-in-tacoma/'),
+           "and is suing the state over the bill, arguing the policy is unconstitutional because it interferes with federal immigration enforcement."),
          br(),
          ) #end resistance tab
          ), # end NWDC sub tabs
          ), # end NWDC tab
          tabPanel("Angola Prison",
                   h3(strong("Louisiana State Penitentiary (Angola), West Feliciana Parish, Louisiana")),
+                  br(),
+                  h4(strong("“We can acknowledge that people can commit crimes or cause harm and suffer consequences from that.
+                            But the imprisonment is the consequence, not dying of heatstroke or becoming incredibly ill because of
+                            exposure to heat.”"),
+                     style ="float:center;
+                              text-align: center;"),
+                  p("- Victoria D. Lynch, PhD from Columbia University Mailman School of Public Health and co-author of the",
+                    a('most recent study', href = 'https://www.nature.com/articles/s41893-024-01293-y'),
+                    "on prisons and extreme heat exposure published in the academic journal, Nature.",
+                    style = "float:      center;
+                              text-align: center;
+                              bottom:     40px;
+                              width:      100%;
+                              color:      gray;
+                              padding:    0px 0px 40px 20px;
+                              z-index:    1;"),
                   br(),
                   img(src = "angola1.jpeg", height = "100%", width = "100%%"),
                   br(),
@@ -758,7 +825,9 @@ tabPanel("Case Study",
            br(),
            br(),
            p("According to climate models, and as seen in the map found under the Heat Risk tab, the state
-             also experiences over 30 days per year above 100 degrees fahrenheit and is expected to experience 80 or more by midcentury."),
+             also experiences over 30 days per year above 100 degrees fahrenheit and is expected to experience 80 or more by midcentury.
+             Louisiana is one of 44 states that does not mandate universal air conditioning in its prisons.",
+             a('This list', href = 'https://www.prisonpolicy.org/blog/2019/06/18/air-conditioning/'), "also includes Texas, Florida and many other famously hot states."),
                ), # end heat subtab
            tabPanel("Legal Battles",
                     br(),
@@ -766,14 +835,48 @@ tabPanel("Case Study",
                     br(),
                     p("In 2016, the state of Louisiana’s corrections department and attorney general’s
                       office spent over $1,067,000 in taxpayer money fighting a lawsuit filed on behalf
-                      of three inmates with medical issues who claimed they were exposed to dangerous heat levels in their cells.")),
+                      of three inmates with medical issues who claimed they were exposed to dangerous heat levels in their cells.
+                      The state could spend roughly the same money — and possibly much less — on an air conditioning system that
+                      would satisfy a federal judge’s order to protect death-row inmates from dangerous heat and humidity inside
+                      Louisiana State Penitentiary. Instead, the corrections department and attorney general’s office have accrued
+                      over $1 million in expenses fighting the 3-year-old lawsuit.
+                      The cost of installing air conditioning in the death row unit, which houses dozens of inmates,",
+                      a('was estimated at around $225,000.', href = 'https://apnews.com/general-news-domestic-news-domestic-news-274b1f8c1fab498aabddb2a182ab4e86')),
+                    br(),
+                    p("The same financial miscalculation has been made numerous times in states that do not require AC in
+                      carceral facilities. For example,",
+                      a('Texas Department of Criminal Justice', href = 'https://www.vera.org/news/prison-is-already-hell-and-climate-change-is-making-it-worse'),
+                      "spent over 7$ million fighting
+                      a lawsuit brought forward by incarcerated people at state prison Wallace Pack Unit, when it would have
+                      cost $4 million to install AC throughout the facility. This money could have provided protections for
+                      incarcerees, employees, and visitors, while leaving $3 million in taxpayer money alone for other use."),
+                    br(),
+                    p("In 2023, the state of Louisiana experienced record-breaking heat in the summer of 2023, with heat indexes
+                      climbing as high as 120 degrees and",
+                      a('16 heat-related deaths across the state.', href = 'https://lailluminator.com/2023/08/06/louisiana-heat-deaths/'),
+                      "This led to",
+                      a('yet another lawsuit', href = 'https://lailluminator.com/2024/04/18/heat-prison/'),
+                      "against the Louisiana Department of Corrections over conditions at Louisiana State Penitentiary. Lydia Wright,
+                      associate director of civil litigation at the Promise of Justice Initiative, who is heading the 2023 lawsuit against Louisiana State Penitentiary claims that DOC has not “taken seriously
+                      the extraourdinary dangers caused by extreme heat at Angola or any other prison in Louisiana. PJI has been litigating
+                      these issues for more than a decade.”"),
+                    br(),
+                    p("In response, the Department of Corrections responded saying they are compliant with state policy to provide all inmates in Louisiana’s
+                      correctional facilities with “cold water, ice, additional cool showers and increased ventilation by opening windows and the
+                      use of fans,” when temperatures rise above 88 degrees. Note that this policy has not been updated since 2018, and experts and
+                      activists claim it is far from sufficient. The DOC also claims they are planning on adding air conditioning to all of its prisons, contingent on funding.
+                      In the meantime, they are conducting studies on how to best climate control their facilities and awaiting an engineer’s report.
+                      "),
+           ), # end Legal battles
                tabPanel("Racial disparities and Labor practices",
                br(),
                h3(strong("Racial disparities and Labor practices")),
                br(),
                p("Many of those incarcerated at Angola, 74% of whom are Black, labor in farm fields for as
                  little as 2 cents an hour and report being placed in solitary confinement for being unwilling
-                 or unable to perform this work, or if they are working too slowly.")), # end racial subtab
+                 or unable to perform this work, or if they are working too slowly",
+                 a('Prisoners have reported', href = 'https://lailluminator.com/2024/04/18/heat-prison/'),
+                 "being forced to labor in the sun on days where the heat index reaches 120 degrees without even a hat for protection.")), # end racial subtab
                tabPanel("Juveniles at Angola",
                         br(),
                         h3(strong("Juveniles housed in an adult prison")),
@@ -789,7 +892,7 @@ tabPanel("Case Study",
          ), #end mainPanel
 
          tags$footer(
-           h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
+           h6(strong("HEAT MAP: An Interactive Look at the Exposure of
             U.S. Carceral Facilities to Environmental Hazards")),
            h6(em("Created by Matthieu Huy. In partnership with Elijah Baker, and guidance from Dr. Summer Gray and Dr. David Pellow")),
            br(),
@@ -800,7 +903,7 @@ tabPanel("Case Study",
                 width:      100%;
                 height:     10px;
                 color:      gray;
-                padding:    30px 100px 40px 20px;
+                padding:    30px 100px 100px 20px;
                 z-index:    1;"
          )
          ), #end Case Study
@@ -898,7 +1001,8 @@ tabPanel("References",
                  href = "https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.2022.html#list-tab-790442341"),
                "U.S. Census Bureau."),
              br(),
-             h3(strong("Case Study")),
+             h3(strong("Case Study: Northwest Detention Center")),
+             br(),
              p(a("“Are We Cleaning Up? 10 Superfund Case Studies–Special Report” (June 1988)",
                  href = "https://www.princeton.edu/~ota/disk2/1988/8803/880301.PDF"),
                "U.S. Congress, Office of Technology Assessment."),
@@ -931,6 +1035,33 @@ tabPanel("References",
              p(a("Tideflats Written Public Comments (September 2017)",
                  href = "https://cms.cityoftacoma.org/Planning/Tideflats/InterimRegulations/Tideflats%20Written%20Comments%20(thru%209-14-17).pdf"),
                "City of Tacoma Planning & Development Services Department."),
+             br(),
+             h3(strong("Case Study: Louisiana State Penitentiary")),
+             br(),
+             p(a("Dholakia, Nazish. (July 2022)",
+                 href = "https://www.vera.org/news/prison-is-already-hell-and-climate-change-is-making-it-worse."),
+               "“Prison Is Already Hell, and Climate Change Is Making It Worse.”” Vera Institute."),
+             br(),
+             p(a("Jones, Alexi. (June 2019)",
+                 href = "https://www.prisonpolicy.org/blog/2019/06/18/air-conditioning/"),
+               "“Cruel and Unusual Punishment: When States Don’t Provide Air Conditioning in Prison.” Prison Policy Initiative."),
+             br(),
+             p(a("Kunzelman, Michael. (June 2016)",
+                 href = "https://apnews.com/general-news-domestic-news-domestic-news-274b1f8c1fab498aabddb2a182ab4e86."),
+               "“AP Exclusive: $1 Million Spent to Avoid Cooling Death Row.”  AP News."),
+             br(),
+             p(a("Palmer, Lue. (April 2024)",
+                 href = "https://lailluminator.com/2024/04/18/heat-prison/"),
+               "“Extreme Heat in Louisiana’s Prisons Raises Risks for Incarcerated.”", em("Luisiana Illuminator.")),
+             br(),
+             p(a("Sullivan, Claire. (August 2023)",
+                 href = "https://apnews.com/general-news-domestic-news-domestic-news-274b1f8c1fab498aabddb2a182ab4e86."),
+               "“Louisiana Heat Leaves 16 Dead in June and July, Health Department Says”", em("Louisiana Illuminator.")),
+             br(),
+             p(a("Tuholske, Cascade, et al. (March 2024)",
+                 href = "https://www.nature.com/articles/s41893-024-01293-y"),
+               "“Hazardous Heat Exposure among Incarcerated People in the United States.”", em("Nature Sustainability.")),
+
             br(),
             br(),
             br(),
@@ -939,18 +1070,17 @@ tabPanel("References",
              ),
 
          tags$footer(
-           h6(strong("Intentional Indifference: An Interactive Look at the Exposure of
+           h6(strong("HEAT MAP: An Interactive Look at the Exposure of
             U.S. Carceral Facilities to Environmental Hazards")),
            h6(em("Created by Matthieu Huy. In partnership with Elijah Baker, and guidance from Dr. Summer Gray and Dr. David Pellow")),
            br(),
         style =
           "float:      center;
                 text-align: left;
-                bottom:     40px;
                 width:      100%;
                 height:     10px;
                 color:      gray;
-                padding:    30px 100px 40px 20px;
+                padding:    30px 100px 100px 20px;
                 z-index:    1;"
          ) #end footer
          ) # end refs page
@@ -1041,9 +1171,15 @@ server <- function(input, output, session) {
       filter(state == state_heat_input)
 
     ###crop heat raster according to county
-    temp_raster_cropped <- crop(temp_raster_merge, extent(state_heat_filtered))
+    # temp_raster_cropped <- crop(temp_raster_merge, extent(state_heat_filtered))
+    # ###clip cropped raster according to county boundaries
+    # temp_raster_clipped <- mask(temp_raster_cropped, state_heat_filtered)
+
+    # NEW code replaces raster package with terra package in server function
+    ###crop heat raster according to county boundaries
+    temp_raster_cropped <- terra::crop(temp_raster_merge, state_heat_filtered)
     ###clip cropped raster according to county boundaries
-    temp_raster_clipped <- mask(temp_raster_cropped, state_heat_filtered)
+    temp_raster_clipped <- terra::mask(temp_raster_cropped, state_heat_filtered)
 
     if(input$heat_map == "Historical") {
       tm_shape(state_heat_filtered) +
